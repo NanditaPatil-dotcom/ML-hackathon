@@ -12,7 +12,8 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pathsnap.decoder.hmm_viterbi import reconstruct_route_for_trip
+from pathsnap.decoder.pipeline import reconstruct_trip_with_scorer
+from pathsnap.models.scorer import CandidateScorer
 
 # Configure formatted terminal logging
 logging.basicConfig(
@@ -21,8 +22,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pathsnap")
 
-DATA_DIR = "/home/wingsfry/Projects/ML hackathon/Student folder"
-ARTIFACTS_DIR = "/home/wingsfry/Projects/ML hackathon/artifacts"
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# Override with environment variables when the data or model live elsewhere.
+DATA_DIR = os.environ.get("PATHSNAP_DATA_DIR", os.path.join(REPO_ROOT, "Student folder"))
+MODEL_PATH = os.environ.get(
+    "PATHSNAP_MODEL", os.path.join(REPO_ROOT, "artifacts", "models", "catboost_best.joblib")
+)
+# Partitions searched for a trip id; the first one is the list shown by /trips.
+PARTITIONS = ["student_test", "evaluator_test", "train"]
 
 app = FastAPI(title="PathSnap Distributed Map-Matching API", version="1.0.0")
 
@@ -37,16 +44,29 @@ app.add_middleware(
 # Global model state
 MODEL = None
 
+def _load_model():
+    global MODEL
+    if MODEL is None:
+        if not os.path.exists(MODEL_PATH):
+            logger.error(f"Model file not found at {MODEL_PATH}!")
+            return None
+        logger.info(f"Loading CandidateScorer from: {MODEL_PATH}...")
+        MODEL = CandidateScorer.load(MODEL_PATH)
+        logger.info("CandidateScorer ready.")
+    return MODEL
+
+
+def _find_trip_dir(trip_id):
+    for part in PARTITIONS:
+        d = os.path.join(DATA_DIR, part)
+        if os.path.isdir(os.path.join(d, trip_id)):
+            return d
+    return None
+
+
 @app.on_event("startup")
 def load_model_on_startup():
-    global MODEL
-    model_path = os.path.join(ARTIFACTS_DIR, "best_model.joblib")
-    if not os.path.exists(model_path):
-        logger.error(f"Model file not found at {model_path}!")
-        return
-    logger.info(f"Loading trained model artifact from: {model_path}...")
-    MODEL = joblib.load(model_path)
-    logger.info("PathSnap ML Model successfully loaded and ready for evaluation requests.")
+    _load_model()
 
 @app.get("/")
 def health_check():
@@ -59,46 +79,44 @@ def health_check():
 @app.get("/trips")
 def list_available_trips():
     """Lists the evaluation trips available on the server."""
-    test_dir = os.path.join(DATA_DIR, "student_test")
-    if not os.path.exists(test_dir):
-        return {"trips": []}
-    trips = sorted([d for d in os.listdir(test_dir) if os.path.isdir(os.path.join(test_dir, d))])
-    return {"trips": trips}
+    for part in PARTITIONS[:2]:
+        test_dir = os.path.join(DATA_DIR, part)
+        if os.path.isdir(test_dir):
+            trips = sorted(d for d in os.listdir(test_dir) if os.path.isdir(os.path.join(test_dir, d)))
+            if trips:
+                return {"trips": trips}
+    return {"trips": []}
 
 @app.post("/evaluate/{trip_id}")
 def evaluate_trip(trip_id: str):
-    global MODEL
     t_start = time.time()
     logger.info(f">>> RECEIVED INFERENCE EVALUATION REQUEST FOR TRIP ID: {trip_id} <<<")
-    
-    if MODEL is None:
-        model_path = os.path.join(ARTIFACTS_DIR, "best_model.joblib")
-        if os.path.exists(model_path):
-            MODEL = joblib.load(model_path)
-        else:
-            logger.error("No model artifact loaded!")
-            raise HTTPException(status_code=500, detail="Model artifact missing")
-            
-    # Locate trip directory
-    trip_dir = os.path.join(DATA_DIR, "student_test", trip_id)
-    if not os.path.exists(trip_dir):
-        trip_dir = os.path.join(DATA_DIR, "train", trip_id)
-        if not os.path.exists(trip_dir):
-            logger.error(f"Trip ID '{trip_id}' not found in student_test or train datasets!")
-            raise HTTPException(status_code=404, detail=f"Trip {trip_id} not found")
-            
-    logger.info(f"Processing trip data from: {trip_dir}...")
-    res = reconstruct_route_for_trip(trip_dir, trip_id, MODEL)
+
+    scorer = _load_model()
+    if scorer is None:
+        raise HTTPException(status_code=500, detail="Model artifact missing")
+
+    partition_dir = _find_trip_dir(trip_id) if trip_id.isalnum() else None
+    if partition_dir is None:
+        logger.error(f"Trip ID '{trip_id}' not found under {DATA_DIR}")
+        raise HTTPException(status_code=404, detail=f"Trip {trip_id} not found")
+
+    logger.info(f"Processing trip data from: {partition_dir}...")
+    res = reconstruct_trip_with_scorer(partition_dir, trip_id, scorer)
     if res is None:
         raise HTTPException(status_code=500, detail="Failed to process trip data")
-        
+    m = res["metrics"]
+    # Keys the Streamlit UI reads.
+    m["clf_top1_acc"] = m.get("clf_acc", 0.0)
+    m["hmm_top1_acc"] = m.get("hmm_acc", 0.0)
+
     duration = round(time.time() - t_start, 3)
     logger.info(f"Inference complete in {duration}s!")
     logger.info(f"Evaluation Metrics for Trip {trip_id}:")
-    logger.info(f"  Classifier Top-1 Accuracy: {res['metrics'].get('clf_top1_acc', 'N/A')}%")
-    logger.info(f"  HMM/Viterbi Top-1 Accuracy: {res['metrics'].get('hmm_top1_acc', 'N/A')}%")
-    logger.info(f"  Classifier Route Continuity: {res['metrics'].get('clf_continuity', 'N/A'):.2f}%")
-    logger.info(f"  HMM/Viterbi Route Continuity: {res['metrics'].get('hmm_continuity', 'N/A'):.2f}%")
+    logger.info(f"  Classifier Top-1 Accuracy: {res['metrics'].get('clf_top1_acc', 0):.2f}%")
+    logger.info(f"  HMM/Viterbi Top-1 Accuracy: {res['metrics'].get('hmm_top1_acc', 0):.2f}%")
+    logger.info(f"  Classifier Route Continuity: {res['metrics']['clf_continuity']:.2f}%")
+    logger.info(f"  HMM/Viterbi Route Continuity: {res['metrics']['hmm_continuity']:.2f}%")
     logger.info("Returning evaluation package to UI client...\n")
     
     # Format coordinate segments for visualization
@@ -106,10 +124,14 @@ def evaluate_trip(trip_id: str):
     nodes = res["nodes"]
     arcs = res["arcs"]
     route = res["route"]
-    hmm_path = res["hmm_path"]
+    hmm_path = []
+    for t in sorted(res["hmm_path"]):  # one arc per GPS point -> drop consecutive repeats
+        if not hmm_path or hmm_path[-1] != res["hmm_path"][t]:
+            hmm_path.append(res["hmm_path"][t])
     
     # Subsampled GPS track coordinates for map rendering (lat, lon)
-    gps_coords = [[float(p[1]), float(p[0])] for p in track[::max(1, len(track)//400)]]
+    xy = track[["lon", "lat"]].to_numpy()
+    gps_coords = [[float(p[1]), float(p[0])] for p in xy[::max(1, len(xy)//400)]]
     
     # Ground truth route segments (lat, lon pairs)
     gt_segments = []

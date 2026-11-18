@@ -2,3 +2,15 @@ __pycache__/
 *.pyc
 data_processing/outputs/*.parquet
 .ipynb_checkpoints/
+.venv/
+venv/
+Student folder/
+*.parquet
+*.feather
+outputs/processed_*.csv
+data/processed/*.csv
+.DS_Store
+Thumbs.db
+*.jpeg
+*.png.bak
+*.zip

@@ -1,0 +1,10 @@
+{
+  "model_name": "LightGBM",
+  "contributor": "Wingsfry",
+  "cv_log_loss": 0.297,
+  "cv_log_loss_std": 0.0032,
+  "cv_top1_acc": 0.776,
+  "cv_macro_f1": 0.7899,
+  "cv_roc_auc": 0.917,
+  "train_time_sec": 0.293
+}

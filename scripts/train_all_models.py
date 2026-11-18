@@ -27,6 +27,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import pathsnap.models.catboost_model  # noqa: E402  (registers "CatBoost")
 import pathsnap.models.rbf_svm  # noqa: E402  (registers "RBF_SVM")
+import pathsnap.models.lightgbm_model  # noqa: E402  (registers "LightGBM")
 from pathsnap.evaluation.compare_models import load_dataset, render_markdown, run_comparison, subsample_by_point  # noqa: E402
 from pathsnap.models.base import LABEL, MODEL_REGISTRY  # noqa: E402
 

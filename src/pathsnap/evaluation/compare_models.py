@@ -1,7 +1,7 @@
 """Grouped CV + holdout comparison across candidate-scoring model families.
 
 This is the core logic behind `scripts/train_all_models.py`: fit every
-requested model on grouped k-fold CV (so candidates of one trip never
+requested model on trip-grouped k-fold CV (so candidates of one trip never
 straddle train/validation), refit on the full training split, evaluate on a
 held-out set, and pick a final model. Kept as a plain function (not a CLI)
 so it's reusable from a script, a notebook, or a test.
@@ -9,13 +9,13 @@ so it's reusable from a script, a notebook, or a test.
 import time
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GroupKFold, GroupShuffleSplit, StratifiedKFold, train_test_split
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 
+from pathsnap.data.build_features import add_candidate_rank
 from pathsnap.evaluation.metrics import compute_metrics
-from pathsnap.models.base import LABEL, MODEL_REGISTRY, REQUIRED_COLUMNS, build_models, fit_road_freq
+from pathsnap.models.base import GROUP_COL, LABEL, MODEL_REGISTRY, POINT_COL, REQUIRED_COLUMNS, build_models
 from pathsnap.models.scorer import CandidateScorer
 
 SEED = 42
@@ -23,43 +23,51 @@ SEED = 42
 
 def load_dataset(path) -> pd.DataFrame:
     path = Path(path)
-    df = pd.read_parquet(path) if path.suffix == ".parquet" else pd.read_csv(path)
+    if path.suffix == ".parquet":
+        df = pd.read_parquet(path)
+    else:
+        df = pd.read_csv(path)
+    if "candidate_rank" not in df.columns:
+        df = add_candidate_rank(df)
     missing = set(REQUIRED_COLUMNS) - set(df.columns)
     if missing:
         raise ValueError(f"missing columns: {sorted(missing)}")
     return df.dropna(subset=REQUIRED_COLUMNS).reset_index(drop=True)
 
 
-def _group_col(df: pd.DataFrame) -> str | None:
-    for c in ("trip_id", "point_id"):
-        if c in df.columns:
-            return c
-    return None
-
-
-def _align_for(spec, X_tr, X_te):
-    return X_te  # no categorical-dtype alignment needed for the current registry
+def subsample_by_point(df: pd.DataFrame, max_points: int, seed: int = SEED) -> pd.DataFrame:
+    """Keep only `max_points` whole (trip_id, point_idx) groups (every
+    candidate of a kept point stays together). Use this to keep CV
+    tractable for models that don't scale to the full real dataset (RBF SVM
+    is roughly O(n^2)-O(n^3) in rows); CatBoost can still be trained
+    separately on the full data since gradient boosting scales linearly."""
+    if GROUP_COL not in df.columns or POINT_COL not in df.columns:
+        return df
+    points = df[[GROUP_COL, POINT_COL]].drop_duplicates()
+    if len(points) <= max_points:
+        return df
+    keep = points.sample(max_points, random_state=seed)
+    return df.merge(keep, on=[GROUP_COL, POINT_COL], how="inner").reset_index(drop=True)
 
 
 def run_comparison(df: pd.DataFrame, model_names: list[str], folds: int = 5, select_by: str = "log_loss"):
     """Returns (report: dict, fitted_scorers: dict[name, CandidateScorer])."""
-    g = _group_col(df)
+    g = GROUP_COL if GROUP_COL in df.columns else None
 
     if g:
         tr_idx, te_idx = next(GroupShuffleSplit(1, test_size=0.2, random_state=SEED).split(df, groups=df[g]))
     else:
+        from sklearn.model_selection import train_test_split
         tr_idx, te_idx = train_test_split(np.arange(len(df)), test_size=0.2, stratify=df[LABEL], random_state=SEED)
     train, test = df.iloc[tr_idx].reset_index(drop=True), df.iloc[te_idx].reset_index(drop=True)
 
-    splitter = GroupKFold(folds) if g else StratifiedKFold(folds, shuffle=True, random_state=SEED)
-    split_args = (train, train[LABEL], train[g]) if g else (train, train[LABEL])
+    splitter = GroupKFold(folds)
     cv_rows = []
-    for fold, (i_tr, i_va) in enumerate(splitter.split(*split_args)):
+    for fold, (i_tr, i_va) in enumerate(splitter.split(train, train[LABEL], train[g])):
         f_tr, f_va = train.iloc[i_tr], train.iloc[i_va]
-        fmap = fit_road_freq(f_tr)
         for name, model in build_models(model_names).items():
             spec = MODEL_REGISTRY[name]
-            X_tr, X_va = spec.make_X(f_tr, fmap), spec.make_X(f_va, fmap)
+            X_tr, X_va = spec.make_X(f_tr), spec.make_X(f_va)
             spec.fit(model, X_tr, f_tr[LABEL])
             p = model.predict_proba(X_va)[:, 1]
             cv_rows.append({"model": name, "fold": fold, **compute_metrics(f_va[LABEL].values, p, f_va.reset_index(drop=True))})
@@ -67,16 +75,14 @@ def run_comparison(df: pd.DataFrame, model_names: list[str], folds: int = 5, sel
     cv_mean = cv.groupby("model").mean(numeric_only=True).drop(columns="fold")
     cv_std = cv.groupby("model").std(numeric_only=True).drop(columns="fold")
 
-    fmap = fit_road_freq(train)
     test_rows, scorers = [], {}
     for name, model in build_models(model_names).items():
         spec = MODEL_REGISTRY[name]
-        X_tr, X_te = spec.make_X(train, fmap), spec.make_X(test, fmap)
+        X_tr, X_te = spec.make_X(train), spec.make_X(test)
         t0 = time.time(); spec.fit(model, X_tr, train[LABEL]); fit_s = time.time() - t0
         t0 = time.time(); p = model.predict_proba(X_te)[:, 1]; pred_ms = (time.time() - t0) * 1000
         test_rows.append({"model": name, **compute_metrics(test[LABEL].values, p, test), "fit_s": fit_s, "predict_ms": pred_ms})
-        scorers[name] = CandidateScorer(model=model, model_name=name, road_freq=fmap,
-                                        uses_native_categorical=spec.uses_native_categorical)
+        scorers[name] = CandidateScorer(model=model, model_name=name)
     test_df = pd.DataFrame(test_rows).set_index("model")
 
     lower_better = select_by in ("log_loss", "brier")

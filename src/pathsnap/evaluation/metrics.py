@@ -1,7 +1,8 @@
 """Metrics for the candidate-segment scoring task.
 
 Standard classification metrics plus `top1_point_acc`, which is the one that
-actually tracks what the HMM cares about: for each GPS point, does the
+actually tracks what the HMM cares about: for each GPS point (grouped by
+trip_id + point_idx together, since point_idx resets per trip), does the
 highest-probability candidate equal the true road?
 """
 import numpy as np
@@ -10,15 +11,15 @@ from sklearn.metrics import (accuracy_score, brier_score_loss, f1_score,
                              log_loss, precision_score, recall_score,
                              roc_auc_score)
 
-from pathsnap.models.base import LABEL
+from pathsnap.models.base import GROUP_COL, LABEL, POINT_COL
 
 
 def top1_point_accuracy(df: pd.DataFrame, proba: np.ndarray) -> float:
-    if "point_id" not in df.columns:
+    if GROUP_COL not in df.columns or POINT_COL not in df.columns:
         return float("nan")
-    tmp = df[["point_id", LABEL]].copy()
+    tmp = df[[GROUP_COL, POINT_COL, LABEL]].copy()
     tmp["p"] = proba
-    best = tmp.loc[tmp.groupby("point_id")["p"].idxmax()]
+    best = tmp.loc[tmp.groupby([GROUP_COL, POINT_COL])["p"].idxmax()]
     return float(best[LABEL].mean())
 
 

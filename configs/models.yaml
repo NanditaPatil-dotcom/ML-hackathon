@@ -21,3 +21,7 @@ comparison:
   models:
     - CatBoost
     - RBF_SVM
+  # RBF SVM doesn't scale to the full real candidates table; the comparison
+  # runs on this many GPS points (all candidates kept), the selected model
+  # is then refit on the full dataset for the saved/production model.
+  max_points_for_comparison: 6000

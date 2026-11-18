@@ -28,7 +28,7 @@ def main():
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False)
-    print(f"wrote {len(df)} rows ({df['point_id'].nunique()} points) to {out}")
+    print(f"wrote {len(df)} rows ({df[['trip_id', 'point_idx']].drop_duplicates().shape[0]} points) to {out}")
 
 
 if __name__ == "__main__":

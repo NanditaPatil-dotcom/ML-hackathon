@@ -1,11 +1,10 @@
 """RBF-kernel SVM candidate-scoring model.
 
-Unlike CatBoost, SVC has no notion of a categorical feature, so
-`candidate_road_id` is frequency-encoded (see `add_road_freq` in base.py)
-instead of passed raw, and every feature is standardized first (`StandardScaler`)
-since SVMs are scale-sensitive. `probability=True` fits Platt scaling on top
-of the decision function so `predict_proba` returns a calibrated-ish score,
-which is what the HMM emission step needs.
+Every feature is standardized first (`StandardScaler`) since SVMs are
+scale-sensitive (distances in meters, degrees, m/s all on different scales).
+`probability=True` fits Platt scaling on top of the decision function so
+`predict_proba` returns a calibrated-ish score, which is what the HMM
+emission step needs.
 """
 import yaml
 from sklearn.pipeline import make_pipeline
@@ -30,4 +29,4 @@ def build(config_path: str | None = None):
     return make_pipeline(StandardScaler(), SVC(**load_params(config_path)))
 
 
-register(ModelSpec(name="RBF_SVM", build=build, uses_native_categorical=False))
+register(ModelSpec(name="RBF_SVM", build=build))

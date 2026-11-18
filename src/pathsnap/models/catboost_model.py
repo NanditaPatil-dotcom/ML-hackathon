@@ -1,10 +1,8 @@
 """CatBoost candidate-scoring model.
 
-CatBoost takes `candidate_road_id` as a native categorical feature (passed
-via `cat_features=` at fit time, see `ModelSpec.fit`/`uses_native_categorical`
-in base.py) rather than needing a hand-rolled encoding. That, plus gradient
-boosting on ordered statistics, is why it tends to handle a high-cardinality
-id column well without overfitting to rare road ids.
+Plain numeric features only (see base.py) — gradient boosting with ordered
+statistics handles this feature set well without needing any categorical
+handling, since the one id-like column (candidate_arc_id) isn't used.
 """
 import yaml
 from catboost import CatBoostClassifier
@@ -27,4 +25,4 @@ def build(config_path: str | None = None) -> CatBoostClassifier:
     return CatBoostClassifier(**load_params(config_path))
 
 
-register(ModelSpec(name="CatBoost", build=build, uses_native_categorical=True))
+register(ModelSpec(name="CatBoost", build=build))

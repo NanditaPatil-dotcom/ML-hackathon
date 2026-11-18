@@ -1,4 +1,27 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
+*.py[cod]
+*$py.class
+*.so
 catboost_info/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Raw dataset (large files, over 90MB)
+Student folder/
+
+# Intermediate large dumps
+*.parquet
+*.feather
+outputs/processed_*.csv
+
+# OS files
+.DS_Store
+Thumbs.db

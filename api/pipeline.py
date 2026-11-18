@@ -21,13 +21,19 @@ from . import config
 
 log = logging.getLogger("pathsnap.pipeline")
 # Teammates' code: src/ (candidate_scorer, needed to unpickle the model) and hmm/ (Viterbi).
-for _p in (config.ROOT / "src", config.ROOT):
+for _p in (config.ROOT / "data_processing", config.ROOT / "src", config.ROOT):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 try:
     from hmm.api_adapter import viterbi_for_api  # HMM team's decoder
 except ImportError:
     viterbi_for_api = None
+try:  # preprocessing team's cleaning + candidate/feature code (same code that built the training set)
+    from clean import clean_track as dp_clean_track
+    from features import build_candidates_table as dp_build_candidates
+    from road_graph import RoadGraph as DPRoadGraph
+except ImportError:
+    dp_clean_track = dp_build_candidates = DPRoadGraph = None
 EARTH_R = 6_371_000.0
 
 
@@ -67,16 +73,18 @@ class RoadNetwork:
         self.bearing = bearing_deg(self.lat1, self.lon1, self.lat2, self.lon2)
         self.length = haversine_m(self.lat1, self.lon1, self.lat2, self.lon2)
 
-    def project(self, lat: float, lon: float):
-        """Distance (m), snapped lat/lon, and fraction along arc for every arc."""
+    def project(self, lat: float, lon: float, arc_ids=None):
+        """Distance (m), snapped lat/lon, and fraction along arc, for every arc (or just arc_ids)."""
+        sel = slice(None) if arc_ids is None else np.asarray(arc_ids, dtype=int)
+        lon1, lat1, lon2, lat2 = self.lon1[sel], self.lat1[sel], self.lon2[sel], self.lat2[sel]
         kx = math.cos(math.radians(lat)) * EARTH_R * math.pi / 180
         ky = EARTH_R * math.pi / 180
-        ax, ay = (self.lon1 - lon) * kx, (self.lat1 - lat) * ky
-        dx, dy = (self.lon2 - self.lon1) * kx, (self.lat2 - self.lat1) * ky
+        ax, ay = (lon1 - lon) * kx, (lat1 - lat) * ky
+        dx, dy = (lon2 - lon1) * kx, (lat2 - lat1) * ky
         L2 = dx * dx + dy * dy
         t = np.where(L2 > 0, -(ax * dx + ay * dy) / np.where(L2 > 0, L2, 1), 0.0).clip(0, 1)
         px, py = ax + t * dx, ay + t * dy
-        dist = np.where(self.valid, np.hypot(px, py), np.inf)
+        dist = np.where(self.valid[sel], np.hypot(px, py), np.inf)
         return dist, lat + py / ky, lon + px / kx, t
 
     def transition_cost(self, i: int, j: int) -> float:
@@ -114,14 +122,18 @@ class Layer:
     arc_ids: np.ndarray
     dist_m: np.ndarray
     snapped: np.ndarray  # (k, 2) lon, lat
-    features: Dict[str, np.ndarray]  # feature name -> (k,) values
+    features: Any  # pandas DataFrame: one row per candidate, model feature columns
     scores: np.ndarray = None  # classifier probabilities
 
 
-# Columns the model team trained on (src/candidate_scorer.py):
-#   distance_to_segment (m), bearing_diff (deg 0-180), speed_limit (km/h),
-#   transition_distance (m), candidate_road_id (arc_id)
-MODEL_FEATURES = ["distance_to_segment", "bearing_diff", "speed_limit", "transition_distance", "candidate_road_id"]
+# Columns the trained CandidateScorer reads (src/pathsnap/models/base.py NUMERIC_FEATURES).
+MODEL_FEATURES = ["dist_to_segment_m", "bearing_alignment_deg", "speed_limit_proxy_mps",
+                  "point_speed_mps", "arc_length_m", "candidate_rank"]
+
+
+def speed_limit_proxy_mps(length_m):
+    """Same heuristic as data_processing/road_graph.py (raw data has no speed limits)."""
+    return np.clip(8.0 + (np.asarray(length_m) - 30.0) * (22.0 - 8.0) / (300.0 - 30.0), 8.0, 22.0)
 
 
 class Pipeline:
@@ -132,8 +144,9 @@ class Pipeline:
 
     def status(self) -> Dict[str, str]:
         return {
-            "cleaning": "builtin speed/duplicate filter",
-            "candidates": f"builtin radius {config.CANDIDATE_RADIUS_M:.0f} m, top {config.MAX_CANDIDATES}",
+            "cleaning": "data_processing.clean_track" if dp_clean_track else "builtin speed/duplicate filter",
+            "candidates": "data_processing.build_candidates_table" if dp_build_candidates
+            else f"builtin radius {config.CANDIDATE_RADIUS_M:.0f} m, top {config.MAX_CANDIDATES}",
             "scoring": f"model {getattr(self.model, 'model_name', type(self.model).__name__)} ({config.MODEL_PATH.name})"
             if self.model is not None
             else "STUB heuristic (no trained model loaded)",
@@ -179,39 +192,66 @@ class Pipeline:
 
     # -- stage 2: candidates + features -------------------------------------
     # INTEGRATION POINT (preprocessing): must produce the SAME feature columns the model was trained on.
-    def candidates(self, net: RoadNetwork, track: np.ndarray, idx: np.ndarray) -> List[Layer]:
-        layers = []
+    def candidates(self, net: RoadNetwork, track: np.ndarray, idx: np.ndarray):
+        """Builtin fallback: one row per (point_idx, candidate_arc_id), same columns as
+        data_processing.features.build_candidates_table."""
+        import pandas as pd
+
+        rows = []
         for pos, i in enumerate(idx):
             lon, lat, t = track[i]
-            dist, slat, slon, frac = net.project(lat, lon)
+            dist, _, _, _ = net.project(lat, lon)
             order = np.argsort(dist)
             near = order[dist[order] <= config.CANDIDATE_RADIUS_M][: config.MAX_CANDIDATES]
             if len(near) == 0:  # nothing in radius -> keep the closest few so the HMM never breaks
                 near = order[: min(3, len(order))]
-            # heading / speed from neighbouring kept observations
-            j0, j1 = idx[max(pos - 1, 0)], idx[min(pos + 1, len(idx) - 1)]
-            if j0 != j1:
-                head = float(bearing_deg(track[j0, 1], track[j0, 0], track[j1, 1], track[j1, 0]))
-                dt = max(track[j1, 2] - track[j0, 2], 1e-6)
-                speed = float(haversine_m(track[j0, 1], track[j0, 0], track[j1, 1], track[j1, 0])) / dt
-            else:
-                head, speed = None, 0.0
-            bdiff = np.zeros(len(near)) if head is None else angle_diff(head, net.bearing[near])
-            snapped = np.column_stack([slon[near], slat[near]])
-            if layers:  # straight-line distance from the previous point's closest candidate
-                prev = layers[-1].snapped[0]
-                trans = haversine_m(prev[1], prev[0], snapped[:, 1], snapped[:, 0])
-            else:
-                trans = np.zeros(len(near))
-            feats = {
-                "distance_to_segment": dist[near],
-                "bearing_diff": bdiff,
-                "speed_limit": np.full(len(near), config.DEFAULT_SPEED_LIMIT_KMH),
-                "transition_distance": trans,
-                "candidate_road_id": near.astype(int),
-                "speed_mps": np.full(len(near), speed),
-            }
-            layers.append(Layer(int(i), near.astype(int), dist[near], snapped, feats))
+            j0 = idx[max(pos - 1, 0)]
+            j1 = idx[pos] if pos > 0 else idx[min(1, len(idx) - 1)]
+            head = float(bearing_deg(track[j0, 1], track[j0, 0], track[j1, 1], track[j1, 0])) if j0 != j1 else 0.0
+            dt = track[i, 2] - track[j0, 2]
+            speed = float(haversine_m(track[j0, 1], track[j0, 0], lat, lon)) / dt if pos > 0 and dt > 0 else 0.0
+            for a in near:
+                rows.append({"point_idx": pos, "candidate_arc_id": int(a), "dist_to_segment_m": float(dist[a]),
+                             "bearing_alignment_deg": float(angle_diff(head, net.bearing[a])),
+                             "arc_length_m": float(net.length[a]),
+                             "speed_limit_proxy_mps": float(speed_limit_proxy_mps(net.length[a])),
+                             "point_speed_mps": speed})
+        return pd.DataFrame(rows)
+
+    def preprocess(self, net: RoadNetwork, track: np.ndarray):
+        """-> (keep mask over raw rows, raw row index per cleaned point, candidates DataFrame)."""
+        import pandas as pd
+
+        if dp_clean_track is not None:
+            try:
+                df = pd.DataFrame(track[:, :3], columns=["lon", "lat", "timestamp"])
+                df["_raw_idx"] = np.arange(len(df))
+                cleaned, _ = dp_clean_track("trip", df)
+                raw_idx = cleaned["_raw_idx"].to_numpy(dtype=int)
+                g = DPRoadGraph(net.nodes, net.arcs)
+                cand = dp_build_candidates("trip", cleaned[["lon", "lat", "timestamp"]].reset_index(drop=True), g)
+                keep = np.zeros(len(track), bool)
+                keep[raw_idx] = True
+                return keep, raw_idx, cand
+            except Exception:  # noqa: BLE001
+                log.exception("data_processing failed; using builtin preprocessing")
+        keep = self.clean(track)
+        raw_idx = np.flatnonzero(keep)
+        return keep, raw_idx, self.candidates(net, track, raw_idx)
+
+    def to_layers(self, net: RoadNetwork, track: np.ndarray, raw_idx: np.ndarray, cand) -> List[Layer]:
+        if cand is None or len(cand) == 0:
+            return []
+        cand = cand.copy()
+        cand["trip_id"] = "trip"
+        cand["candidate_rank"] = cand.groupby("point_idx")["dist_to_segment_m"].rank(method="first").astype(int) - 1
+        layers = []
+        for pidx, g in cand.groupby("point_idx", sort=True):
+            ri = int(raw_idx[int(pidx)])
+            arc_ids = g["candidate_arc_id"].to_numpy(dtype=int)
+            _, slat, slon, _ = net.project(track[ri, 1], track[ri, 0], arc_ids)
+            layers.append(Layer(ri, arc_ids, g["dist_to_segment_m"].to_numpy(float),
+                                np.column_stack([slon, slat]), g))
         return layers
 
     # -- stage 3: classifier scoring -----------------------------------------
@@ -222,10 +262,7 @@ class Pipeline:
             try:
                 import pandas as pd
 
-                cols = {f: np.concatenate([L.features.get(f, np.zeros(len(L.arc_ids))) for L in layers])
-                        for f in self.feature_names}
-                cols["point_id"] = np.concatenate([np.full(len(L.arc_ids), L.obs_index) for L in layers])
-                df = pd.DataFrame(cols)
+                df = pd.concat([L.features for L in layers], ignore_index=True)
                 if hasattr(self.model, "emission_log_prob"):  # model team's CandidateScorer wrapper
                     proba = np.asarray(self.model.predict_proba(df))
                 else:  # plain sklearn-style estimator
@@ -239,7 +276,7 @@ class Pipeline:
                 log.exception("Model scoring failed; falling back to heuristic")
         for L in layers:  # Gaussian GPS-noise likelihood x heading agreement
             e = np.exp(-0.5 * (L.dist_m / config.GPS_SIGMA_M) ** 2)
-            b = L.features["bearing_diff"]
+            b = L.features["bearing_alignment_deg"].to_numpy(float)
             L.scores = e * (0.7 + 0.3 * (0.5 + 0.5 * np.cos(np.radians(b))))
 
     # -- stage 4: HMM / Viterbi ---------------------------------------------
@@ -273,17 +310,18 @@ class Pipeline:
     # -- run -------------------------------------------------------------------
     def run(self, track: np.ndarray, nodes: np.ndarray, arcs: np.ndarray) -> Dict[str, Any]:
         net = RoadNetwork(nodes, arcs)
-        keep = self.clean(track)
-        idx = np.flatnonzero(keep)
         per_obs_hmm: List[Optional[int]] = [None] * len(track)
         per_obs_clf: List[Optional[int]] = [None] * len(track)
-        if len(idx) and net.n_arcs:
-            layers = self.candidates(net, track, idx)
-            self.score(layers)
-            choice = self.viterbi(net, track, layers)
-            for L, k in zip(layers, choice):
-                per_obs_hmm[L.obs_index] = int(L.arc_ids[k])
-                per_obs_clf[L.obs_index] = int(L.arc_ids[int(np.argmax(L.scores))])
+        keep = np.zeros(len(track), bool)
+        if net.n_arcs and len(track):
+            keep, raw_idx, cand = self.preprocess(net, track)
+            layers = self.to_layers(net, track, raw_idx, cand)
+            if layers:
+                self.score(layers)
+                choice = self.viterbi(net, track, layers)
+                for L, k in zip(layers, choice):
+                    per_obs_hmm[L.obs_index] = int(L.arc_ids[k])
+                    per_obs_clf[L.obs_index] = int(L.arc_ids[int(np.argmax(L.scores))])
         return {
             "network": net,
             "kept_mask": keep,

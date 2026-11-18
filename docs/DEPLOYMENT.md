@@ -52,8 +52,12 @@ Metric definitions (all computed server-side against `<trip>.route`):
 
 1. Clone the repo, then `pip install -r requirements-api.txt`.
 2. Put the raw trip files under `data/raw/` (any sub-folders are fine; every `<trip>.track` with its `.nodes/.arcs/.route` siblings becomes a trip). Put the 10 evaluator trips in a folder whose name contains `eval` (e.g. `data/raw/evaluator_test/`), **or** set `PATHSNAP_EVAL_TRIPS=id1,id2,...`.
-3. Model: the API loads `models/final_model.joblib` if present, else `outputs/best_model.joblib` (the training script's output, a `CandidateScorer` from `src/candidate_scorer.py`). It feeds the model the columns `distance_to_segment, bearing_diff, speed_limit, transition_distance, candidate_road_id`. If loading fails, the API falls back to a heuristic scorer and `/health` says `STUB`.
-   The HMM decoder comes from `hmm/api_adapter.py` when that folder exists; otherwise a builtin Viterbi is used (`/health` → `route_reconstruction` says which).
+3. Model and pipeline code: the API picks up each teammate's piece automatically when it is in the repo, and `/health` shows which are live:
+   - cleaning + candidates + features: `data_processing/` (`clean_track`, `build_candidates_table`), the same code that built the training set;
+   - scorer: `models/final_model.joblib` if present, else `artifacts/models/catboost_best.joblib` (the `CandidateScorer` from `src/pathsnap/models/scorer.py`, fed `dist_to_segment_m, bearing_alignment_deg, speed_limit_proxy_mps, point_speed_mps, arc_length_m, candidate_rank`);
+   - decoder: `hmm/api_adapter.py`.
+   Any piece that is missing or fails falls back to a builtin version so the demo never breaks.
+   Install every team requirement on Laptop 1: `pip install -r requirements-api.txt -r requirements.txt -r data_processing/requirements.txt` (skip files that don't exist yet).
 4. Start: `run_api.bat` (or `python -m api.main`). You should see `Uvicorn running on http://0.0.0.0:8000`.
 5. Check locally: open `http://localhost:8000/health` in a browser.
 

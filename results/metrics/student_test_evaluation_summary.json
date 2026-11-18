@@ -1,0 +1,9 @@
+{
+  "train_rows_used": 44898,
+  "train_trips_used": 80,
+  "student_test_rows": 124324,
+  "student_test_trips": 10,
+  "selection_rule": "lowest mean trip-grouped CV log loss on training trips only",
+  "selected_model": "CatBoost",
+  "candidate_miss_rate_mean_over_student_test_trips": 0.023375439877149604
+}

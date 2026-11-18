@@ -1,0 +1,3 @@
+partition,trips,raw_gps_observations,missing_gps_rows,non_numeric_gps_rows,nonfinite_gps_rows,invalid_coordinate_rows,duplicate_gps_rows,nonmonotonic_timestamp_steps,gaps_over_2s,invalid_nodes,invalid_arcs,duplicate_arcs,self_loop_arcs,isolated_nodes,trips_with_multiple_weak_components,weak_components_median_per_trip,weak_components_max_per_trip,largest_component_fraction_median,largest_component_fraction_min
+train,80,208417,0,0,0,0,0,0,2937,0,0,1775,22,0,79,20.0,421,0.9810660720777296,0.6927966101694916
+student_test,10,19160,0,0,0,0,0,0,138,0,0,128,2,0,10,11.0,100,0.9706052316639073,0.8740341840318426

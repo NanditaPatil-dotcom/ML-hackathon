@@ -75,3 +75,20 @@ Model-training team: treat `*_candidates.parquet` as your supervised table — g
 
 HMM/Viterbi team: candidates + their scores are your emission inputs; `road_graph.RoadGraph`
 gives you segment connectivity for transitions.
+
+## Raw-data EDA audit
+
+Run the audit before preprocessing to document raw GPS quality and road-network integrity:
+
+```bash
+python scripts/run_eda.py --data-root <path> --out-dir results/eda --partitions train student_test --map-trip 00000001 --map-partition train
+```
+
+The audit writes a per-trip `trip_inventory.csv`, partition-level CSV/JSON summaries, and
+`eda_summary.txt`, plus plots for GPS quality and graph connectivity. GPS checks count
+missing, non-numeric, non-finite, out-of-range, duplicate, and non-increasing-timestamp
+observations; timestamp gaps above two seconds are reported separately as sampling gaps.
+Road checks count invalid nodes/arcs, repeated directed arcs, self-loops, and isolated nodes.
+Connectivity uses weak components (arc direction ignored for membership) and reports the
+largest component's share of valid nodes. The optional Folium map has independent layers
+for raw GPS observations, nearby directed road segments, and the reference route.

@@ -1,19 +1,15 @@
-================ PATHSNAP EXPLORATORY DATA ANALYSIS ================
-Total Trips Analyzed: 90
-Training Trips: 80
-Student Test Trips: 10
+PATHSNAP DATA QUALITY AND ROAD-NETWORK CONNECTIVITY
+Scope: raw train and student_test partitions only; evaluator_test excluded.
+Connectivity uses weak components (directed arcs treated as undirected for component membership).
 
---- GPS TRACK STATISTICS ---
-Total GPS Observations: 227,577
-Avg Observations/Trip: 2528.6 (std: 3157.0)
-Min/Max Observations: 262 / 19313
-Avg Trip Duration: 5274.2 seconds (~87.9 mins)
-Sampling Regularity: 94.32% of steps are exactly 1 second apart
-Total Significant Gaps (>2s): 3075
-Avg Vehicle Speed: 49.1 km/h (13.6 m/s)
+[train] 80 trips; 208,417 raw GPS rows
+  GPS rows: 0 missing, 0 non-numeric, 0 non-finite, 0 out-of-range coordinates, 0 exact duplicates
+  Timestamp sequence: 0 non-increasing steps; 2937 gaps > 2 seconds
+  Road network: 0 invalid nodes, 0 invalid arcs, 1775 duplicate arcs, 22 self-loops, 0 isolated nodes
+  Connectivity: 79 trips have multiple weak components; median components/trip 20.0, maximum 421; median largest-component node share 0.9811, minimum 0.6928
 
---- ROAD NETWORK STATISTICS ---
-Avg Road Network Nodes per Trip: 22490.8
-Avg Arcs (Directed Road Segments) per Trip: 45132.7
-Avg Graph Out-Degree: 2.02
-Avg Route Length: 386.8 road segments
+[student_test] 10 trips; 19,160 raw GPS rows
+  GPS rows: 0 missing, 0 non-numeric, 0 non-finite, 0 out-of-range coordinates, 0 exact duplicates
+  Timestamp sequence: 0 non-increasing steps; 138 gaps > 2 seconds
+  Road network: 0 invalid nodes, 0 invalid arcs, 128 duplicate arcs, 2 self-loops, 0 isolated nodes
+  Connectivity: 10 trips have multiple weak components; median components/trip 11.0, maximum 100; median largest-component node share 0.9706, minimum 0.8740

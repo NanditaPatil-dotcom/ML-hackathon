@@ -2,3 +2,15 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 catboost_info/
+
+# Raw/interim data: regenerate locally, keep only the folder + README in git
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/interim/*
+!data/interim/.gitkeep
+!data/interim/README.md
+
+# Large training logs; comparison reports in results/ are tracked
+artifacts/logs/*
+!artifacts/logs/.gitkeep

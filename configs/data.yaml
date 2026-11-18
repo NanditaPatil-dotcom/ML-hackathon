@@ -1,0 +1,20 @@
+# Mock data generation settings, and the feature schema the modeling code
+# expects from preprocessing. Update n_points/seed here rather than passing
+# flags, so configs/ stays the single source of truth for data settings.
+mock:
+  n_points: 2000
+  n_roads: 300
+  seed: 42
+
+# Columns every dataset fed into src/pathsnap must have.
+required_columns:
+  - distance_to_segment   # float, meters: perpendicular GPS point -> candidate segment
+  - bearing_diff           # float, degrees 0-180: |GPS heading - segment bearing|
+  - speed_limit             # int, km/h: posted limit of candidate road
+  - transition_distance    # float, meters: network distance from previous matched point
+  - candidate_road_id      # int: road segment id (native categorical for CatBoost)
+  - label                    # int 0/1: is this candidate the true road
+
+optional_columns:
+  - trip_id    # groups candidates for leak-free CV splits
+  - point_id   # groups candidates of one GPS point (top-1 accuracy, HMM emission norm)

@@ -1,18 +1,19 @@
-"""Generate a mock candidate-segment dataset with the same columns the
-preprocessing step will produce, so the training pipeline can be built and
-tested before real data is ready.
+"""Mock candidate-segment feature builder.
 
-Each GPS point gets 3-6 candidate road segments; exactly one is the true road
-(label=1). The true candidate tends to be closer, better aligned in bearing and
-have a shorter transition distance, with plenty of noise and overlap.
+Stands in for the real preprocessing pipeline's feature output until it
+lands. Produces the same column names/types so `evaluation/compare_models.py`
+is a drop-in once real data is available — just point scripts at the real
+file, nothing here needs to change.
 """
-import argparse
-
 import numpy as np
 import pandas as pd
 
 
-def make_mock(n_points: int = 2000, n_roads: int = 300, seed: int = 42) -> pd.DataFrame:
+def make_mock_features(n_points: int = 2000, n_roads: int = 300, seed: int = 42) -> pd.DataFrame:
+    """Each GPS point gets 3-6 candidate road segments; exactly one is the
+    true road (label=1). The true candidate tends to be closer, better
+    aligned in bearing and have a shorter transition distance, with plenty
+    of noise and overlap so the task isn't trivial."""
     rng = np.random.default_rng(seed)
     road_speed = rng.choice([30, 40, 50, 60, 80, 100], size=n_roads)
     rows = []
@@ -42,14 +43,3 @@ def make_mock(n_points: int = 2000, n_roads: int = 300, seed: int = 42) -> pd.Da
                 "label": int(is_true),
             })
     return pd.DataFrame(rows)
-
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="data/mock/candidates_mock.csv")
-    ap.add_argument("--n-points", type=int, default=2000)
-    ap.add_argument("--seed", type=int, default=42)
-    a = ap.parse_args()
-    df = make_mock(a.n_points, seed=a.seed)
-    df.to_csv(a.out, index=False)
-    print(f"wrote {len(df)} rows ({df['point_id'].nunique()} points) to {a.out}")

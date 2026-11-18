@@ -115,18 +115,32 @@ bash scripts/run_server.sh
 bash scripts/run_ui.sh
 ```
 
-Before the evaluator demo, configure the backend's dataset and model locations
-for the deployment machine and verify the API and UI against the final model
-artifact. The API implementation currently includes machine-specific paths;
-do not assume the launchers alone make the service portable. The older root
-artifact `artifacts/best_model.joblib` is retained for compatibility; the
-selected comparison artifact is under `artifacts/models/`.
+`src/pathsnap/service/api.py` resolves paths relative to the repository root.
+By default it reads trips from `Student folder/` and loads
+`artifacts/models/catboost_best.joblib` (the selected CatBoost scorer). Override
+either with environment variables on Laptop 1:
+
+```bash
+export PATHSNAP_DATA_DIR="/path/to/Student folder"   # contains evaluator_test/ and student_test/
+export PATHSNAP_MODEL=artifacts/models/catboost_best.joblib
+bash scripts/run_server.sh                            # FastAPI on 0.0.0.0:8000
+```
+
+`GET /trips` lists the `evaluator_test` trips when that folder exists, falling
+back to `student_test`. `POST /evaluate/{trip_id}` runs candidate generation,
+CatBoost scoring and HMM/Viterbi decoding, then scores the prediction against the
+server-side `.route` file. Ground truth never leaves Laptop 1: the response
+carries only the GPS points, the predicted route and the accuracy numbers.
+
+On Laptop 2, run `bash scripts/run_ui.sh` (Streamlit, port 8501) and enter
+`http://<LAPTOP1_IP>:8000` in the sidebar. The older root artifact
+`artifacts/best_model.joblib` (Random Forest) is kept only for the legacy path.
 
 ## Reports and experiment history
 
 The five assignment PDFs are kept in `PathSnap_student_materials/`. The
-technical report is in `report/`. Rebuild the report only from current saved
-metrics and verified experiment outputs. The script in
+technical report is in `report/`. Rebuild it with `python report/build_report.py`,
+which reads every number and figure from `results/` so the PDF stays verifiable. The script in
 `scripts/experiments/generate_report_legacy.py` is an archived earlier version
 and contains machine-specific paths; it is not the current report generator.
 

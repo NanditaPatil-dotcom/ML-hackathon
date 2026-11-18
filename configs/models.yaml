@@ -49,6 +49,9 @@ comparison:
   select_by: log_loss   # must be well-calibrated: these probabilities feed the HMM
   models:
     - CatBoost
+    - LightGBM
+    - ExtraTrees
+    - RandomForest
     - RBF_SVM
     - LightGBM
     - ExtraTrees

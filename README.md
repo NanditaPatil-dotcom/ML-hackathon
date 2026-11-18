@@ -69,7 +69,48 @@ evaluator-test labels for model or hyperparameter selection.
 ## Model development
 
 Model implementations use the shared schema in `pathsnap.models.base` and
-`configs/models.yaml`. Extra Trees is implemented in
-`src/pathsnap/models/extra_tree.py`. Training, comparison, tuning, and decoder
-experiments should be launched from scripts in `scripts/`, with measured
-results saved under `results/` and model artifacts under `artifacts/models/`.
+`configs/models.yaml`: each one is a small file that builds an estimator and
+calls `register(ModelSpec(name=..., build=...))`, which plugs it into
+`scripts/train_all_models.py` and `pathsnap.evaluation.compare_models` with
+no other code changes needed.
+
+- `catboost_model.py` -> `"CatBoost"`
+- `lightgbm_model.py` -> `"LightGBM"`
+- `extra_trees.py` -> `"ExtraTrees"`
+- `random_forest_model.py` -> `"RandomForest"`
+- `rbf_svm.py` -> `"RBF_SVM"`
+
+(`extra_tree.py` and the top-level `random_forest.py` are earlier,
+standalone explorations with their own feature engineering — not wired into
+the shared registry/comparison pipeline.)
+
+```bash
+# train + compare all 5 registered models, pick the best by CV log-loss
+python scripts/train_all_models.py --data data_processing/outputs/train_candidates.parquet
+```
+
+### Model comparison results (real data: 80 train trips, 1.15M candidate rows)
+
+5-fold grouped CV + 80/20 holdout (RBF SVM doesn't scale to the full table,
+so the comparison runs on a 6000-GPS-point subsample; the winner is then
+refit on the full dataset for the saved production model):
+
+| Model | CV log_loss | CV top1_point_acc | test predict_ms |
+|---|---|---|---|
+| CatBoost | 0.1585 ± 0.0296 | 0.739 | 1.8 |
+| LightGBM | 0.1595 ± 0.0308 | 0.737 | 11.1 |
+| ExtraTrees | 0.1609 ± 0.0276 | 0.743 | 128.3 |
+| RandomForest | 0.1639 ± 0.0269 | 0.735 | 119.6 |
+| RBF_SVM | 0.1981 ± 0.0420 | 0.742 | 996.6 |
+
+All four tree-based models are statistically tied on log-loss (within one CV
+std); among those, **CatBoost** is selected for being by far the fastest at
+inference (the HMM scores every candidate of every GPS point). RBF SVM is
+clearly worse on log-loss and ~500x slower. Saved as
+`artifacts/models/catboost_best.joblib`. Held out on the 10 student_test
+trips: accuracy 0.944, log_loss 0.136, top1_point_acc 0.782. Full table:
+`results/metrics/model_comparison.md`.
+
+Training, comparison, tuning, and decoder experiments should be launched
+from scripts in `scripts/`, with measured results saved under `results/`
+and model artifacts under `artifacts/models/`.

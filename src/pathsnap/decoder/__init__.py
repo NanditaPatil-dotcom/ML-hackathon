@@ -1,3 +1,9 @@
-# The HMM/Viterbi decoder is owned by a teammate's thread (see hmm/ at repo
-# root, PR #1). This package is left as a placeholder in case that work is
-# later folded in here; nothing in it is used by the model-training code.
+"""PathSnap HMM/Viterbi route reconstruction.
+
+    from pathsnap.decoder import HMMRouteDecoder, RoadGraph, match_trip
+"""
+from .graph import RoadGraph
+from .hmm_viterbi import HMMRouteDecoder, reconstruct_route_for_trip
+from .matcher import HMMConfig, MatchResult, match_trip
+
+__all__ = ["HMMRouteDecoder", "reconstruct_route_for_trip", "RoadGraph", "match_trip", "HMMConfig", "MatchResult"]

@@ -11,9 +11,24 @@ generalize to evaluation trips. `candidate_rank` (added in
 substitute.
 """
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 import pandas as pd
+import yaml
+
+ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_MODEL_CONFIG = ROOT / "configs" / "models.yaml"
+
+
+def load_model_params(section: str, defaults: dict, config_path: str | Path | None = None) -> dict:
+    """Load one model's parameters from the shared YAML config over defaults."""
+    params = dict(defaults)
+    path = Path(config_path) if config_path else DEFAULT_MODEL_CONFIG
+    if path.exists():
+        config = yaml.safe_load(path.read_text()) or {}
+        params.update(config.get(section, {}))
+    return params
 
 NUMERIC_FEATURES = [
     "dist_to_segment_m",

@@ -7,16 +7,21 @@ Generates interactive HTML maps for trips showing:
 """
 
 import os
+from pathlib import Path
 import folium
 import numpy as np
 from pathsnap.data.legacy_eda import load_trip_track, load_nodes, load_arcs, load_route
 
-DATA_DIR = "/home/wingsfry/Projects/ML hackathon/Student folder"
-MAPS_DIR = "/home/wingsfry/Projects/ML hackathon/outputs/maps"
+ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = Path(os.environ.get("PATHSNAP_DATA_ROOT", ROOT / "Student folder"))
+MAPS_DIR = Path(os.environ.get("PATHSNAP_MAPS_DIR", ROOT / "results" / "maps"))
 
-def generate_trip_map(trip_id="00000001", partition="train", max_points=1000):
-    os.makedirs(MAPS_DIR, exist_ok=True)
-    trip_dir = os.path.join(DATA_DIR, partition, trip_id)
+def generate_trip_map(trip_id="00000001", partition="train", max_points=1000,
+                      data_root=None, maps_dir=None):
+    data_root = Path(data_root) if data_root else DATA_DIR
+    maps_dir = Path(maps_dir) if maps_dir else MAPS_DIR
+    maps_dir.mkdir(parents=True, exist_ok=True)
+    trip_dir = data_root / partition / trip_id
     
     track = load_trip_track(trip_dir, trip_id)
     nodes = load_nodes(trip_dir, trip_id)
@@ -89,7 +94,7 @@ def generate_trip_map(trip_id="00000001", partition="train", max_points=1000):
     # Add Layer Control
     folium.LayerControl(collapsed=False).add_to(m)
     
-    out_file = os.path.join(MAPS_DIR, f"trip_{trip_id}_visualization.html")
+    out_file = maps_dir / f"trip_{trip_id}_visualization.html"
     m.save(out_file)
     print(f"Saved interactive Folium map to: {out_file}")
     return out_file

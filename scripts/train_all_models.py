@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import pathsnap.models.catboost_model  # noqa: E402  (registers "CatBoost")
 import pathsnap.models.rbf_svm  # noqa: E402  (registers "RBF_SVM")
 import pathsnap.models.lightgbm_model  # noqa: E402  (registers "LightGBM")
-import pathsnap.models.extra_trees_model  # noqa: E402  (registers "ExtraTrees")
+import pathsnap.models.extra_trees  # noqa: E402  (registers "ExtraTrees")
 import pathsnap.models.random_forest_model  # noqa: E402  (registers "RandomForest")
 from pathsnap.evaluation.compare_models import (leaderboard, load_dataset, render_markdown,  # noqa: E402
                                                 run_comparison, subsample_by_point)

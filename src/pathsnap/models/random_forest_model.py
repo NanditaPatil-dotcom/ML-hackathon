@@ -1,15 +1,12 @@
 """Random Forest candidate-scoring model (registry entry).
 
-Hyperparameters follow the Random Forest baseline in
-`pathsnap/random_forest.py`; this file exposes the same estimator through the
-shared registry so it is trained on the shared feature schema
+This estimator uses the shared feature schema
 (`pathsnap.models.base.NUMERIC_FEATURES`) and compared on the same
 trip-grouped folds as every other model.
 """
-import yaml
 from sklearn.ensemble import RandomForestClassifier
 
-from pathsnap.models.base import ModelSpec, register
+from pathsnap.models.base import ModelSpec, load_model_params, register
 
 _DEFAULTS = dict(
     n_estimators=400,
@@ -22,12 +19,7 @@ _DEFAULTS = dict(
 
 
 def load_params(config_path: str | None = None) -> dict:
-    params = dict(_DEFAULTS)
-    if config_path:
-        with open(config_path) as f:
-            cfg = yaml.safe_load(f) or {}
-        params.update(cfg.get("random_forest", {}))
-    return params
+    return load_model_params("random_forest", _DEFAULTS, config_path)
 
 
 def build(config_path: str | None = None) -> RandomForestClassifier:

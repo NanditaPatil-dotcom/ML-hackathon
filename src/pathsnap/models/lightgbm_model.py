@@ -6,10 +6,9 @@ Takes the shared numeric features from pathsnap.models.base:
     dist_to_segment_m, bearing_alignment_deg, speed_limit_proxy_mps,
     point_speed_mps, arc_length_m, candidate_rank
 """
-import yaml
 from lightgbm import LGBMClassifier
 
-from pathsnap.models.base import ModelSpec, register
+from pathsnap.models.base import ModelSpec, load_model_params, register
 
 _DEFAULTS = dict(
     n_estimators=150,
@@ -24,12 +23,7 @@ _DEFAULTS = dict(
 )
 
 def load_params(config_path: str | None = None) -> dict:
-    params = dict(_DEFAULTS)
-    if config_path:
-        with open(config_path) as f:
-            cfg = yaml.safe_load(f) or {}
-        params.update(cfg.get("lightgbm", {}))
-    return params
+    return load_model_params("lightgbm", _DEFAULTS, config_path)
 
 def build(config_path: str | None = None) -> LGBMClassifier:
     return LGBMClassifier(**load_params(config_path))

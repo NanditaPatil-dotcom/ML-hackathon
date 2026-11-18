@@ -3,8 +3,8 @@
 Model Owner: Wingsfry (LightGBM Lead)
 
 Usage:
-    python scripts/train_lgbm.py --data data/mock/candidates_mock.csv
-    python scripts/train_lgbm.py --data data/processed/train_folds.parquet
+    python scripts/experiments/train_lgbm.py --data data/processed/candidates_mock.csv
+    python scripts/experiments/train_lgbm.py --data results/preprocessing/candidate_data/train_candidates.parquet
 """
 import argparse
 import json
@@ -18,7 +18,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, log_loss, roc_auc_score
 from sklearn.model_selection import GroupKFold
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 import pathsnap.models.lightgbm_model  # noqa: E402

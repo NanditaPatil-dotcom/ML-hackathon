@@ -1,27 +1,22 @@
-"""Extra Trees candidate-scoring model.
-
-Like Random Forest but each tree's splits are chosen randomly (not by the
-best split search) rather than built from a bootstrap resample — usually a
-bit faster to train and slightly more regularized. Takes the same shared
-numeric features from pathsnap.models.base as every other model here
-(dist_to_segment_m, bearing_alignment_deg, speed_limit_proxy_mps,
-point_speed_mps, arc_length_m, candidate_rank).
-"""
-import yaml
+"""Extra Trees candidate-scoring model registered in the shared model suite."""
 from sklearn.ensemble import ExtraTreesClassifier
 
-from pathsnap.models.base import ModelSpec, register
+from pathsnap.models.base import ModelSpec, load_model_params, register
 
-_DEFAULTS = dict(n_estimators=400, min_samples_leaf=3, n_jobs=-1, random_state=42)
+_DEFAULTS = dict(
+    n_estimators=400,
+    max_depth=None,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    max_features="sqrt",
+    class_weight="balanced",
+    random_state=42,
+    n_jobs=-1,
+)
 
 
 def load_params(config_path: str | None = None) -> dict:
-    params = dict(_DEFAULTS)
-    if config_path:
-        with open(config_path) as f:
-            cfg = yaml.safe_load(f) or {}
-        params.update(cfg.get("extra_trees", {}))
-    return params
+    return load_model_params("extra_trees", _DEFAULTS, config_path)
 
 
 def build(config_path: str | None = None) -> ExtraTreesClassifier:

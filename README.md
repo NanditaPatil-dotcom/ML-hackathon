@@ -1,48 +1,59 @@
 # PathSnap
 
-PathSnap matches noisy GPS observations to road segments and reconstructs a
-connected route. The repository is organized as one Python package under
-`src/pathsnap`; command-line entry points live in `scripts/`.
+PathSnap maps noisy GPS observations to candidate road segments, scores those
+candidates with machine-learning models, and reconstructs a connected route
+with an HMM/Viterbi decoder.
 
 ## Repository layout
 
 ```text
-configs/                         Shared dataset and model settings
+configs/                         Dataset and model configuration
 data/
-  raw/                           Original data location (not committed)
-  interim/                       Intermediate files (not committed)
-  processed/                     Model-ready data and small fixtures
+  raw/                           Place raw input data here (not committed)
+  interim/                       Intermediate data (not committed)
+  processed/                     Small fixtures and mock data
 src/pathsnap/
-  data/
-    preprocessing/               Teammate's raw-data cleaning, EDA, candidate
-                                  generation, road graph, and split pipeline
-    build_features.py            Shared model feature preparation
-    candidate_gen.py             Alternate candidate-generation helpers
-    feature_eng.py               Feature engineering helpers
-    legacy_eda.py                 Raw-file EDA helpers used by legacy utilities
-  models/                         Candidate scorers and model comparison code
-  evaluation/                     Metrics and grouped model comparison
+  data/preprocessing/            Current raw-data cleaning, features, EDA,
+                                 road graph, route matching, and pipeline
+  data/                           Shared data helpers and inference candidate
+                                 generation
+  models/                         Canonical model registry and five models
+  evaluation/                     Metrics and grouped comparison
   tuning/                         Bayesian hyperparameter optimization
-  decoder/                        HMM and Viterbi route reconstruction
-  visualization/                  Folium and other visualization helpers
+  decoder/                        HMM/Viterbi route reconstruction
   service/                        FastAPI backend
-  ui/                             Evaluator-facing UI
-scripts/                          Preprocessing, training, and evaluation CLIs
-artifacts/models/                 Saved model artifacts
-artifacts/logs/                   Experiment logs
+  ui/                             Streamlit evaluator interface
+  visualization/                  Folium visualization helpers
+  legacy/                          Retained standalone/earlier experiments
+scripts/
+  preprocess.py                   Build train and student-test candidate data
+  run_eda.py                      Generate dataset inventory, plots, and map
+  train_all_models.py             Train/compare the registered model suite
+  evaluate_student_test.py        Student-test metrics and comparison plots
+  evaluate_student_test_diagnostics.py
+                                  Confusion matrices and sequence metrics
+  run_server.sh / run_ui.sh       Start the API and UI
+  experiments/                    Earlier one-model/report utilities
+artifacts/
+  models/                          Current model artifacts
+  logs/                            Training logs
+  archive/                         Older model artifacts retained for reference
 results/
-  eda/                             EDA inventories, plots, and maps
-  preprocessing/                  Split manifests and preprocessing samples
-  metrics/                         Model evaluation tables and summaries
-  figures/                         Comparison charts
-  maps/                            Route visualizations
-  bayesian/                        Hyperparameter search records and plots
-report/                            Final technical report materials
+  preprocessing/                  Generated candidate datasets and manifests
+  eda/                             EDA tables, plots, and maps
+  metrics/                         Evaluation tables and summaries
+  figures/                         Model and decoder comparison plots
+  maps/                            Interactive route maps
+  bayesian/                        Current optimization outputs
+  archive/                         Earlier metrics, maps, and experiment outputs
+report/                            Consolidated technical report files
+PathSnap_student_materials/        Assignment reference PDFs
+tests/                             Focused decoder tests
 ```
 
-Raw data and large generated datasets should stay out of Git. Commit source,
-configuration, reproducible experiment records, and only the artifacts needed
-to reproduce or run the final system.
+Raw datasets, large generated candidate tables, and model binaries may be
+gitignored. Keep source, configuration, reproducible result summaries, and the
+inference artifact needed for the final demo in the repository.
 
 ## Setup
 
@@ -52,65 +63,75 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Commands below assume the repository root as the working directory.
+
 ## Preprocessing and EDA
 
 ```bash
-python scripts/preprocess.py --data-root "/path/to/Student folder" \
-  --out-dir results/preprocessing
-python scripts/run_eda.py --data-root "/path/to/Student folder" \
-  --out-dir results/eda --map-trip 00000001
+python scripts/preprocess.py \
+  --data-root "/path/to/Student folder" \
+  --out-dir results/preprocessing/candidate_data
+
+python scripts/run_eda.py \
+  --data-root "/path/to/Student folder" \
+  --out-dir results/eda \
+  --map-trip 00000001
 ```
 
-The candidate table is the shared input to model training. Each row represents
-a GPS observation and candidate road segment; `is_ground_truth_arc` is the
-training label. Keep folds and evaluation splits grouped by trip. Never use
-evaluator-test labels for model or hyperparameter selection.
+The preprocessing output is the shared input to the current model suite. Rows
+represent observation/candidate-road pairs; the label is
+`is_ground_truth_arc`. Keep all data splits grouped by `trip_id`. The reserved
+evaluator-test partition must not be used for development or model selection.
 
-## Model development
+## Model comparison and evaluation
 
-Model implementations use the shared schema in `pathsnap.models.base` and
-`configs/models.yaml`: each one is a small file that builds an estimator and
-calls `register(ModelSpec(name=..., build=...))`, which plugs it into
-`scripts/train_all_models.py` and `pathsnap.evaluation.compare_models` with
-no other code changes needed.
-
-- `catboost_model.py` -> `"CatBoost"`
-- `lightgbm_model.py` -> `"LightGBM"`
-- `extra_trees.py` -> `"ExtraTrees"`
-- `random_forest_model.py` -> `"RandomForest"`
-- `rbf_svm.py` -> `"RBF_SVM"`
-
-(`extra_tree.py` and the top-level `random_forest.py` are earlier,
-standalone explorations with their own feature engineering — not wired into
-the shared registry/comparison pipeline.)
+The active registry contains CatBoost, LightGBM, ExtraTrees, Random Forest,
+and RBF SVM. The model implementation in `src/pathsnap/models/extra_trees.py`
+is the sole ExtraTrees registry entry; old wrappers and standalone experiments
+are retained under `src/pathsnap/legacy/`.
 
 ```bash
-# train + compare all 5 registered models, pick the best by CV log-loss
-python scripts/train_all_models.py --data data_processing/outputs/train_candidates.parquet
+python scripts/train_all_models.py \
+  --data results/preprocessing/candidate_data/train_candidates.parquet
+
+python scripts/evaluate_student_test.py \
+  --data-root "/path/to/Student folder"
+
+python scripts/evaluate_student_test_diagnostics.py \
+  --data-root "/path/to/Student folder"
 ```
 
-### Model comparison results (real data: 80 train trips, 1.15M candidate rows)
+Training-side CV and model selection use training trips. The ten
+`student_test` trips support development-stage comparison only. The separate
+evaluator-test partition must remain untouched. Detailed outputs are saved in
+`results/metrics/` and `results/figures/`.
 
-5-fold grouped CV + 80/20 holdout (RBF SVM doesn't scale to the full table,
-so the comparison runs on a 6000-GPS-point subsample; the winner is then
-refit on the full dataset for the saved production model):
+## API and UI
 
-| Model | CV log_loss | CV top1_point_acc | test predict_ms |
-|---|---|---|---|
-| CatBoost | 0.1585 ± 0.0296 | 0.739 | 1.8 |
-| LightGBM | 0.1595 ± 0.0308 | 0.737 | 11.1 |
-| ExtraTrees | 0.1609 ± 0.0276 | 0.743 | 128.3 |
-| RandomForest | 0.1639 ± 0.0269 | 0.735 | 119.6 |
-| RBF_SVM | 0.1981 ± 0.0420 | 0.742 | 996.6 |
+The launch scripts are:
 
-All four tree-based models are statistically tied on log-loss (within one CV
-std); among those, **CatBoost** is selected for being by far the fastest at
-inference (the HMM scores every candidate of every GPS point). RBF SVM is
-clearly worse on log-loss and ~500x slower. Saved as
-`artifacts/models/catboost_best.joblib`. Held out on the 10 student_test
-trips: accuracy 0.944, log_loss 0.136, top1_point_acc 0.782. Full table:
-`results/metrics/model_comparison.md`.
+```bash
+bash scripts/run_server.sh
+bash scripts/run_ui.sh
+```
 
-Training, comparison, tuning, and decoder experiments should be launched
-from scripts in `scripts/`, with measured results saved under `results/`
-and model artifacts under `artifacts/models/`.
+Before the evaluator demo, configure the backend's dataset and model locations
+for the deployment machine and verify the API and UI against the final model
+artifact. The API implementation currently includes machine-specific paths;
+do not assume the launchers alone make the service portable. The older root
+artifact `artifacts/best_model.joblib` is retained for compatibility; the
+selected comparison artifact is under `artifacts/models/`.
+
+## Reports and experiment history
+
+The five assignment PDFs are kept in `PathSnap_student_materials/`. The
+technical report is in `report/`. Rebuild the report only from current saved
+metrics and verified experiment outputs. The script in
+`scripts/experiments/generate_report_legacy.py` is an archived earlier version
+and contains machine-specific paths; it is not the current report generator.
+
+Earlier model and benchmark implementations are kept in `src/pathsnap/legacy/`
+for provenance. They are not imported by the active comparison pipeline.
+Older generated comparisons and optimization outputs are in
+`results/archive/`; use the `student_test_*` files in `results/metrics/` for the
+latest student-test evaluation.

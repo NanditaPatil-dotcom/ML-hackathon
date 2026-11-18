@@ -6,23 +6,17 @@ scale-sensitive (distances in meters, degrees, m/s all on different scales).
 `predict_proba` returns a calibrated-ish score, which is what the HMM
 emission step needs.
 """
-import yaml
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from pathsnap.models.base import ModelSpec, register
+from pathsnap.models.base import ModelSpec, load_model_params, register
 
 _DEFAULTS = dict(kernel="rbf", C=3.0, gamma="scale", probability=True, random_state=42)
 
 
 def load_params(config_path: str | None = None) -> dict:
-    params = dict(_DEFAULTS)
-    if config_path:
-        with open(config_path) as f:
-            cfg = yaml.safe_load(f) or {}
-        params.update(cfg.get("rbf_svm", {}))
-    return params
+    return load_model_params("rbf_svm", _DEFAULTS, config_path)
 
 
 def build(config_path: str | None = None):

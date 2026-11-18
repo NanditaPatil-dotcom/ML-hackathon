@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Train and compare the candidate-scoring models, pick and save the best one.
+"""Train and compare all 5 candidate-scoring models, pick and save the best one.
+
+Models (all via the registry in src/pathsnap/models/): CatBoost, RBF_SVM,
+LightGBM, ExtraTrees, RandomForest. Every model gets the same features and the
+same trip-grouped folds (GroupKFold on trip_id), so no trip leaks between
+train and validation.
 
     python scripts/train_all_models.py --data data/processed/candidates_mock.csv
     python scripts/train_all_models.py --data path/to/real_preprocessed.parquet
@@ -28,9 +33,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import pathsnap.models.catboost_model  # noqa: E402  (registers "CatBoost")
 import pathsnap.models.rbf_svm  # noqa: E402  (registers "RBF_SVM")
 import pathsnap.models.lightgbm_model  # noqa: E402  (registers "LightGBM")
-import pathsnap.models.extra_trees  # noqa: E402  (registers "ExtraTrees")
+import pathsnap.models.extra_trees_model  # noqa: E402  (registers "ExtraTrees")
 import pathsnap.models.random_forest_model  # noqa: E402  (registers "RandomForest")
-from pathsnap.evaluation.compare_models import load_dataset, render_markdown, run_comparison, subsample_by_point  # noqa: E402
+from pathsnap.evaluation.compare_models import (leaderboard, load_dataset, render_markdown,  # noqa: E402
+                                                run_comparison, subsample_by_point)
 from pathsnap.models.base import LABEL, MODEL_REGISTRY  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -70,6 +76,8 @@ def main():
         report["cv_std"][[a.select_by, "f1", "top1_point_acc"]].add_prefix("cv_std_")
     ).join(report["test"].add_prefix("test_")).loc[report["ranked"].index]
     table.to_csv(results_dir / "model_comparison.csv")
+    lb = leaderboard(report)
+    lb.to_csv(results_dir / "model_ranking.csv")
     (results_dir / "model_comparison.md").write_text(render_markdown(report, a.data))
     (results_dir / "summary.json").write_text(json.dumps({
         "selected": report["best"], "select_by": a.select_by, "tied": report["tied"],
@@ -89,6 +97,8 @@ def main():
 
     joblib.dump(best_scorer, artifacts_dir / f"{best_name.lower()}_best.joblib")
     print(render_markdown(report, a.data))
+    print("\nRanked by CV " + a.select_by + ":\n" + lb.round(4).to_string())
+    print(f"\nWINNER: {best_name}")
     print(f"\nSaved best model ({best_name}) to {artifacts_dir / f'{best_name.lower()}_best.joblib'}")
 
 

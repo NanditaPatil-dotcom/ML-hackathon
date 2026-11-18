@@ -1,21 +1,24 @@
-"""Random Forest candidate-scoring model.
+"""Random Forest candidate-scoring model (registry entry).
 
-Bootstrap-aggregated decision trees. Takes the same shared numeric features
-from pathsnap.models.base as every other model here (dist_to_segment_m,
-bearing_alignment_deg, speed_limit_proxy_mps, point_speed_mps,
-arc_length_m, candidate_rank).
-
-(There's also a standalone src/pathsnap/random_forest.py with its own
-feature engineering straight from the raw Student folder files — a
-different, earlier approach. This module is the one registered into
-pathsnap.models.base.MODEL_REGISTRY for the shared comparison pipeline.)
+Hyperparameters follow the Random Forest baseline in
+`pathsnap/random_forest.py`; this file exposes the same estimator through the
+shared registry so it is trained on the shared feature schema
+(`pathsnap.models.base.NUMERIC_FEATURES`) and compared on the same
+trip-grouped folds as every other model.
 """
 import yaml
 from sklearn.ensemble import RandomForestClassifier
 
 from pathsnap.models.base import ModelSpec, register
 
-_DEFAULTS = dict(n_estimators=400, min_samples_leaf=3, n_jobs=-1, random_state=42)
+_DEFAULTS = dict(
+    n_estimators=400,
+    max_features="sqrt",
+    min_samples_leaf=2,
+    class_weight="balanced_subsample",
+    random_state=42,
+    n_jobs=-1,
+)
 
 
 def load_params(config_path: str | None = None) -> dict:

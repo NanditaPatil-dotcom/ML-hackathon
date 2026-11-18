@@ -1,0 +1,8 @@
+{
+  "selected_by_train_cv_log_loss": "CatBoost",
+  "evaluated_observations_with_candidates": 15245,
+  "classifier_top1_accuracy": 0.7787471302066251,
+  "hmm_top1_accuracy": 0.8049852410626435,
+  "classifier_route_continuity": 0.8727692607902036,
+  "hmm_route_continuity": 0.9849184519995722
+}

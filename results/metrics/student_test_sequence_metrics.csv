@@ -1,0 +1,7 @@
+model,mean_trip_pointwise_top1_accuracy,exact_sequence_match_rate,mean_sequence_coverage,trips_with_exact_match,student_test_trips
+CatBoost,0.7999211217067945,0.0,1.0,0,10
+ExtraTrees,0.7998310825184577,0.0,1.0,0,10
+LightGBM,0.8024844935210986,0.0,1.0,0,10
+RandomForest,0.7948943682981446,0.0,1.0,0,10
+RBF_SVM,0.8020199800918189,0.0,1.0,0,10
+CatBoost+HMM,0.8242844367150062,0.0,1.0,0,10

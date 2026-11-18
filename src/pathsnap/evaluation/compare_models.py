@@ -81,7 +81,8 @@ def run_comparison(df: pd.DataFrame, model_names: list[str], folds: int = 5, sel
         X_tr, X_te = spec.make_X(train), spec.make_X(test)
         t0 = time.time(); spec.fit(model, X_tr, train[LABEL]); fit_s = time.time() - t0
         t0 = time.time(); p = model.predict_proba(X_te)[:, 1]; pred_ms = (time.time() - t0) * 1000
-        test_rows.append({"model": name, **compute_metrics(test[LABEL].values, p, test), "fit_s": fit_s, "predict_ms": pred_ms})
+        test_rows.append({"model": name, **compute_metrics(test[LABEL].values, p, test), "fit_s": fit_s, "predict_ms": pred_ms,
+                          "predict_ms_per_1k": pred_ms / max(len(test), 1) * 1000})
         scorers[name] = CandidateScorer(model=model, model_name=name)
     test_df = pd.DataFrame(test_rows).set_index("model")
 
@@ -114,6 +115,22 @@ def run_comparison(df: pd.DataFrame, model_names: list[str], folds: int = 5, sel
     return report, scorers
 
 
+def leaderboard(report: dict) -> pd.DataFrame:
+    """One ranked row per model: CV log-loss / accuracy / top-1, holdout
+    log-loss / accuracy, and inference time. Ordered by the selection metric."""
+    cv, test = report["cv_mean"], report["test"]
+    order = list(report["ranked"].index)
+    lb = pd.DataFrame({
+        "cv_log_loss": cv["log_loss"], "cv_accuracy": cv["accuracy"], "cv_top1_point_acc": cv["top1_point_acc"],
+        "test_log_loss": test["log_loss"], "test_accuracy": test["accuracy"],
+        "fit_s": test["fit_s"], "inference_ms_per_1k": test["predict_ms_per_1k"],
+    }).loc[order]
+    lb.insert(0, "rank", range(1, len(lb) + 1))
+    lb["selected"] = [m == report["best"] for m in lb.index]
+    lb.index.name = "model"
+    return lb
+
+
 def render_markdown(report: dict, data_path: str) -> str:
     show = ["accuracy", "f1", "roc_auc", "log_loss", "brier", "top1_point_acc"]
     fmt = lambda m, s: f"{m:.4f} ± {s:.4f}"
@@ -125,6 +142,17 @@ def render_markdown(report: dict, data_path: str) -> str:
         f"Split: grouped 80/20 holdout by `{g}`, {report['folds']}-fold grouped CV on the 80%. "
         f"Selection metric: CV **{report['select_by']}** ({'lower' if lower_better else 'higher'} is better), "
         "because the probabilities feed the HMM as emission scores and must be well calibrated.\n",
+        "## Ranking\n",
+        "| # | Model | CV log_loss | CV accuracy | CV top1_point_acc | Test log_loss | Test accuracy | Fit (s) | Inference (ms / 1k candidates) |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for m, r in leaderboard(report).iterrows():
+        name = f"**{m}** (selected)" if r["selected"] else m
+        lines.append(f"| {r['rank']} | {name} | {r['cv_log_loss']:.4f} | {r['cv_accuracy']:.4f} | "
+                     f"{r['cv_top1_point_acc']:.4f} | {r['test_log_loss']:.4f} | {r['test_accuracy']:.4f} | "
+                     f"{r['fit_s']:.2f} | {r['inference_ms_per_1k']:.2f} |")
+    lines += [
+        "",
         f"## {report['folds']}-fold CV (mean ± std)\n",
         "| Model | " + " | ".join(show) + " |", "|---" * (len(show) + 1) + "|",
     ]

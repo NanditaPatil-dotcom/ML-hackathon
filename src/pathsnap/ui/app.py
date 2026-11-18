@@ -31,6 +31,21 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 # HEADER
 # --------------------------------------------------
 
+st.markdown("""
+<style>
+    .metric-card {
+        background-color: #1e293b;
+        border-radius: 8px;
+        padding: 12px 16px;
+        border: 1px solid #334155;
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🗺️ PathSnap: Distributed Map-Matching & Route Reconstruction")
 st.caption(
     "PES University | UE24CS352A Machine Learning | Evaluation Console"

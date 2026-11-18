@@ -14,8 +14,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from io_utils import discover_trips, load_trip
-from road_graph import RoadGraph
+from .io_utils import discover_trips, load_trip
+from .road_graph import RoadGraph
 
 
 def summarize_partition(data_root: str, partition: str) -> pd.DataFrame:

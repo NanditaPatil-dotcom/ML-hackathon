@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from geo import haversine_m
+from .geo import haversine_m
 
 # Thresholds for vehicle GPS traces. The provided dataset includes German
 # Autobahn driving with no general speed limit, so the cap must be well

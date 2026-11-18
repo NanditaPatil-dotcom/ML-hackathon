@@ -1,7 +1,7 @@
 """Shared feature schema and model registry for candidate-segment scoring.
 
 Schema matches the real preprocessing pipeline's output
-(`data_processing/pipeline.py`, candidates parquet) exactly, so no renaming
+(`pathsnap.data.preprocessing.pipeline`, candidates parquet) exactly, so no renaming
 is needed between preprocessing and modeling. `candidate_arc_id` itself is
 deliberately NOT a model feature: it's a per-trip row index into that trip's
 own .arcs file, so the same id means a different road in a different trip —

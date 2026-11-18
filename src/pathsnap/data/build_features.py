@@ -1,5 +1,5 @@
 """Candidate-rank feature, and a mock feature generator matching the real
-preprocessing schema (data_processing/pipeline.py's candidates parquet).
+preprocessing schema (`pathsnap.data.preprocessing.pipeline` candidates parquet).
 """
 import numpy as np
 import pandas as pd
@@ -21,7 +21,7 @@ def add_candidate_rank(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def make_mock_features(n_points: int = 2000, n_roads: int = 300, seed: int = 42) -> pd.DataFrame:
-    """Stands in for data_processing/pipeline.py until/when you want to
+    """Stands in for the preprocessing pipeline until/when you want to
     smoke-test the shape of the pipeline without the real dataset. Emits the
     same columns the real candidates parquet has (trip_id, point_idx,
     dist_to_segment_m, bearing_alignment_deg, speed_limit_proxy_mps,

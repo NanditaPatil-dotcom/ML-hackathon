@@ -15,8 +15,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from geo import point_to_segment_distance_xy
-from road_graph import RoadGraph
+from .geo import point_to_segment_distance_xy
+from .road_graph import RoadGraph
 
 WINDOW = 25  # how far ahead/behind the previous match we search first
 

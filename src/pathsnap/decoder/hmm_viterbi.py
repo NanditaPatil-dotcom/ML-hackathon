@@ -119,9 +119,9 @@ def reconstruct_route_for_trip(trip_dir, trip_id, model, search_radius=75.0, top
     End-to-end route reconstruction pipeline for a single trip.
     Batches feature inference for sub-second inference latency.
     """
-    from src.eda import load_trip_track, load_nodes, load_arcs, load_route
-    from src.candidate_gen import generate_candidates_for_trip
-    from src.feature_eng import match_track_to_route
+    from pathsnap.data.legacy_eda import load_trip_track, load_nodes, load_arcs, load_route
+    from pathsnap.data.candidate_gen import generate_candidates_for_trip
+    from pathsnap.data.feature_eng import match_track_to_route
     
     track = load_trip_track(trip_dir, trip_id)
     nodes = load_nodes(trip_dir, trip_id)

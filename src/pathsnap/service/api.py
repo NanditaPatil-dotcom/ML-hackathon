@@ -12,7 +12,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from src.hmm_viterbi import reconstruct_route_for_trip
+from pathsnap.decoder.hmm_viterbi import reconstruct_route_for_trip
 
 # Configure formatted terminal logging
 logging.basicConfig(

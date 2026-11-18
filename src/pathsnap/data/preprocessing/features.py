@@ -8,8 +8,8 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from geo import bearing_deg, bearing_diff_deg, haversine_m
-from road_graph import RoadGraph
+from .geo import bearing_deg, bearing_diff_deg, haversine_m
+from .road_graph import RoadGraph
 
 CANDIDATE_RADIUS_M = 40.0
 CANDIDATE_K = 30

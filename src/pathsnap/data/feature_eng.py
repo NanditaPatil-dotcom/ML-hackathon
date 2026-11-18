@@ -18,8 +18,8 @@ import os
 import glob
 import numpy as np
 import pandas as pd
-from src.eda import load_trip_track, load_nodes, load_arcs, load_route
-from src.candidate_gen import (
+from pathsnap.data.legacy_eda import load_trip_track, load_nodes, load_arcs, load_route
+from pathsnap.data.candidate_gen import (
     project_coordinates,
     dist_point_to_segment,
     generate_candidates_for_trip

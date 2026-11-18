@@ -45,9 +45,9 @@ out — never touched by this pipeline for fitting anything, only usable at true
 
 ## Output format
 
-Running `python pipeline.py --data-root <path> --out-dir outputs/` writes, per partition:
+Run from the repository root with `python scripts/preprocess.py --data-root <path> --out-dir results/preprocessing`. The command writes, per partition:
 
-- `outputs/<partition>_candidates.parquet` — one row per **(trip_id, point_idx, candidate_arc_id)**:
+- `<out-dir>/<partition>_candidates.parquet` — one row per **(trip_id, point_idx, candidate_arc_id)**:
 
   | column | meaning |
   |---|---|
@@ -62,12 +62,12 @@ Running `python pipeline.py --data-root <path> --out-dir outputs/` writes, per p
   | `point_speed_mps` | observed speed from previous point |
   | `is_ground_truth_arc` | 1 if this candidate matches the `.route` arc at this point (train/student-test only) |
 
-- `outputs/<partition>_transitions.parquet` — one row per consecutive GPS point pair per trip:
+- `<out-dir>/<partition>_transitions.parquet` — one row per consecutive GPS point pair per trip:
   `trip_id, point_idx, dt_sec, point_transition_dist_m` (feeds HMM transition probabilities
   together with the road graph's arc-to-arc adjacency, which the HMM/Viterbi team should load
   from `road_graph.RoadGraph.arc_adjacency(trip_id)`).
 
-- `outputs/<partition>_trips.parquet` — one row per trip: trip-level summary stats
+- `<out-dir>/<partition>_trips.csv` — one row per trip: trip-level summary stats
   (num points, duration, candidate miss rate, etc.) for the EDA/report.
 
 Model-training team: treat `*_candidates.parquet` as your supervised table — group by

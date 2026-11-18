@@ -1,5 +1,5 @@
 # Mock data generation settings, and the feature schema the modeling code
-# expects. This now matches data_processing/pipeline.py's real candidates
+# expects. This now matches pathsnap.data.preprocessing.pipeline's candidates
 # parquet column-for-column, so no renaming is needed between preprocessing
 # and modeling.
 mock:

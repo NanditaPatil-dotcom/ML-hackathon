@@ -9,7 +9,7 @@ Generates interactive HTML maps for trips showing:
 import os
 import folium
 import numpy as np
-from src.eda import load_trip_track, load_nodes, load_arcs, load_route
+from pathsnap.data.legacy_eda import load_trip_track, load_nodes, load_arcs, load_route
 
 DATA_DIR = "/home/wingsfry/Projects/ML hackathon/Student folder"
 MAPS_DIR = "/home/wingsfry/Projects/ML hackathon/outputs/maps"

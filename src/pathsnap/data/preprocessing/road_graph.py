@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.spatial import cKDTree
 
-from geo import LocalProjector, bearing_deg, haversine_m, point_to_segment_distance_xy
+from .geo import LocalProjector, bearing_deg, haversine_m, point_to_segment_distance_xy
 
 # A candidate arc's "speed limit proxy": the raw data has no explicit speed
 # limit field, so we proxy it from segment length, which correlates with

@@ -6,9 +6,10 @@ env/
 
 # Python cache
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
+.venv/
+data/demo/
+.ipynb_checkpoints/
 catboost_info/
 
 # Jupyter Notebook checkpoints

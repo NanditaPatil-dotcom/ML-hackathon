@@ -28,7 +28,7 @@ DATA_DIR = os.environ.get("PATHSNAP_DATA_DIR", os.path.join(REPO_ROOT, "Student 
 MODEL_PATH = os.environ.get(
     "PATHSNAP_MODEL", os.path.join(REPO_ROOT, "artifacts", "models", "catboost_best.joblib")
 )
-# Partitions searched for a trip id; the first one is the list shown by /trips.
+# Partitions searched for a trip id (/trips shows evaluator_test if present, else student_test).
 PARTITIONS = ["student_test", "evaluator_test", "train"]
 
 app = FastAPI(title="PathSnap Distributed Map-Matching API", version="1.0.0")
@@ -79,7 +79,9 @@ def health_check():
 @app.get("/trips")
 def list_available_trips():
     """Lists the evaluation trips available on the server."""
-    for part in PARTITIONS[:2]:
+    # The reserved evaluation trips are shown when present; otherwise the
+    # student_test trips (development).
+    for part in ("evaluator_test", "student_test"):
         test_dir = os.path.join(DATA_DIR, part)
         if os.path.isdir(test_dir):
             trips = sorted(d for d in os.listdir(test_dir) if os.path.isdir(os.path.join(test_dir, d)))

@@ -1,0 +1,500 @@
+{
+  "communities": {
+    "0": [
+      "dataclasses",
+      "src_pathsnap_data_preprocessing_clean",
+      "src_pathsnap_data_preprocessing_clean_clean_track",
+      "src_pathsnap_data_preprocessing_clean_cleanstats",
+      "src_pathsnap_data_preprocessing_clean_cleanstats_as_dict",
+      "src_pathsnap_data_preprocessing_clean_py_dataframe",
+      "src_pathsnap_data_preprocessing_clean_rationale_1",
+      "src_pathsnap_data_preprocessing_features",
+      "src_pathsnap_data_preprocessing_features_build_candidates_table",
+      "src_pathsnap_data_preprocessing_features_build_transitions_table",
+      "src_pathsnap_data_preprocessing_features_py_dataframe",
+      "src_pathsnap_data_preprocessing_features_py_ndarray",
+      "src_pathsnap_data_preprocessing_features_rationale_1",
+      "src_pathsnap_data_preprocessing_features_rationale_26",
+      "src_pathsnap_data_preprocessing_features_rationale_74",
+      "src_pathsnap_data_preprocessing_geo",
+      "src_pathsnap_data_preprocessing_geo_bearing_deg",
+      "src_pathsnap_data_preprocessing_geo_bearing_diff_deg",
+      "src_pathsnap_data_preprocessing_geo_haversine_m",
+      "src_pathsnap_data_preprocessing_geo_localprojector",
+      "src_pathsnap_data_preprocessing_geo_localprojector_init",
+      "src_pathsnap_data_preprocessing_geo_localprojector_project",
+      "src_pathsnap_data_preprocessing_geo_point_to_segment_distance_xy",
+      "src_pathsnap_data_preprocessing_geo_rationale_1",
+      "src_pathsnap_data_preprocessing_geo_rationale_24",
+      "src_pathsnap_data_preprocessing_geo_rationale_34",
+      "src_pathsnap_data_preprocessing_geo_rationale_44",
+      "src_pathsnap_data_preprocessing_geo_rationale_50",
+      "src_pathsnap_data_preprocessing_geo_rationale_71",
+      "src_pathsnap_data_preprocessing_pipeline",
+      "src_pathsnap_data_preprocessing_pipeline_main",
+      "src_pathsnap_data_preprocessing_pipeline_process_partition",
+      "src_pathsnap_data_preprocessing_pipeline_rationale_1",
+      "src_pathsnap_data_preprocessing_road_graph",
+      "src_pathsnap_data_preprocessing_road_graph_candidatearc",
+      "src_pathsnap_data_preprocessing_road_graph_py_ndarray",
+      "src_pathsnap_data_preprocessing_road_graph_rationale_1",
+      "src_pathsnap_data_preprocessing_road_graph_rationale_80",
+      "src_pathsnap_data_preprocessing_road_graph_rationale_87",
+      "src_pathsnap_data_preprocessing_road_graph_roadgraph",
+      "src_pathsnap_data_preprocessing_road_graph_roadgraph_arc_transitions",
+      "src_pathsnap_data_preprocessing_road_graph_roadgraph_init",
+      "src_pathsnap_data_preprocessing_road_graph_roadgraph_query_candidates",
+      "src_pathsnap_data_preprocessing_road_graph_speed_limit_proxy_mps",
+      "src_pathsnap_data_preprocessing_route_match",
+      "src_pathsnap_data_preprocessing_route_match_match_route_to_track",
+      "src_pathsnap_data_preprocessing_route_match_py_ndarray",
+      "src_pathsnap_data_preprocessing_route_match_rationale_1",
+      "src_pathsnap_data_preprocessing_route_match_rationale_27",
+      "src_pathsnap_data_preprocessing_split",
+      "src_pathsnap_data_preprocessing_split_kfold_by_trip",
+      "src_pathsnap_data_preprocessing_split_py_dataframe",
+      "src_pathsnap_data_preprocessing_split_rationale_1",
+      "src_pathsnap_data_preprocessing_split_rationale_17"
+    ],
+    "1": [
+      "argparse",
+      "json",
+      "pathlib",
+      "pathsnap_data_build_features",
+      "pathsnap_data_preprocessing_eda",
+      "pathsnap_data_preprocessing_pipeline",
+      "pathsnap_evaluation_compare_models",
+      "pathsnap_evaluation_metrics",
+      "pathsnap_models_catboost_model",
+      "pathsnap_models_extra_trees",
+      "pathsnap_models_lightgbm_model",
+      "pathsnap_models_random_forest_model",
+      "pathsnap_models_rbf_svm",
+      "pathsnap_models_scorer",
+      "scripts_evaluate_models",
+      "scripts_evaluate_models_main",
+      "scripts_evaluate_models_rationale_2",
+      "scripts_generate_mock_data",
+      "scripts_generate_mock_data_rationale_2",
+      "scripts_preprocess",
+      "scripts_preprocess_rationale_1",
+      "scripts_run_eda",
+      "scripts_run_eda_rationale_1",
+      "scripts_smoke_test_scorer",
+      "scripts_smoke_test_scorer_main",
+      "scripts_smoke_test_scorer_rationale_2",
+      "scripts_train_all_models",
+      "scripts_train_all_models_main",
+      "scripts_train_all_models_rationale_2",
+      "scripts_train_lgbm",
+      "scripts_train_lgbm_main",
+      "scripts_train_lgbm_rationale_2",
+      "scripts_train_lgbm_top1_accuracy",
+      "src_pathsnap_evaluation_compare_models",
+      "src_pathsnap_evaluation_compare_models_load_dataset",
+      "src_pathsnap_evaluation_compare_models_py_dataframe",
+      "src_pathsnap_evaluation_compare_models_rationale_1",
+      "src_pathsnap_evaluation_compare_models_rationale_39",
+      "src_pathsnap_evaluation_compare_models_rationale_54",
+      "src_pathsnap_evaluation_compare_models_render_markdown",
+      "src_pathsnap_evaluation_compare_models_run_comparison",
+      "src_pathsnap_evaluation_compare_models_subsample_by_point",
+      "src_pathsnap_models_base_build_models",
+      "src_pathsnap_models_scorer_candidatescorer",
+      "src_pathsnap_models_scorer_candidatescorer_load",
+      "sys",
+      "time"
+    ],
+    "2": [
+      "catboost",
+      "catboostclassifier",
+      "extratreesclassifier",
+      "lgbmclassifier",
+      "lightgbm",
+      "pathsnap_models_base",
+      "randomforestclassifier",
+      "scripts_generate_mock_data_main",
+      "sklearn_ensemble",
+      "sklearn_pipeline",
+      "sklearn_preprocessing",
+      "sklearn_svm",
+      "src_pathsnap_data_build_features",
+      "src_pathsnap_data_build_features_add_candidate_rank",
+      "src_pathsnap_data_build_features_make_mock_features",
+      "src_pathsnap_data_build_features_py_dataframe",
+      "src_pathsnap_data_build_features_rationale_1",
+      "src_pathsnap_data_build_features_rationale_11",
+      "src_pathsnap_data_build_features_rationale_24",
+      "src_pathsnap_models_catboost_model",
+      "src_pathsnap_models_catboost_model_build",
+      "src_pathsnap_models_catboost_model_load_params",
+      "src_pathsnap_models_catboost_model_rationale_1",
+      "src_pathsnap_models_extra_tree",
+      "src_pathsnap_models_extra_tree_rationale_1",
+      "src_pathsnap_models_extra_trees",
+      "src_pathsnap_models_extra_trees_build",
+      "src_pathsnap_models_extra_trees_load_params",
+      "src_pathsnap_models_extra_trees_rationale_1",
+      "src_pathsnap_models_lightgbm_model",
+      "src_pathsnap_models_lightgbm_model_build",
+      "src_pathsnap_models_lightgbm_model_load_params",
+      "src_pathsnap_models_lightgbm_model_rationale_1",
+      "src_pathsnap_models_random_forest_model",
+      "src_pathsnap_models_random_forest_model_build",
+      "src_pathsnap_models_random_forest_model_load_params",
+      "src_pathsnap_models_random_forest_model_rationale_1",
+      "src_pathsnap_models_rbf_svm",
+      "src_pathsnap_models_rbf_svm_build",
+      "src_pathsnap_models_rbf_svm_load_params",
+      "src_pathsnap_models_rbf_svm_rationale_1",
+      "yaml"
+    ],
+    "3": [
+      "collections",
+      "glob",
+      "numpy",
+      "os",
+      "pathsnap_data_candidate_gen",
+      "pathsnap_data_legacy_eda",
+      "src_pathsnap_data_candidate_gen",
+      "src_pathsnap_data_candidate_gen_build_road_spatial_index",
+      "src_pathsnap_data_candidate_gen_dist_point_to_segment",
+      "src_pathsnap_data_candidate_gen_generate_candidates_for_trip",
+      "src_pathsnap_data_candidate_gen_project_coordinates",
+      "src_pathsnap_data_candidate_gen_rationale_1",
+      "src_pathsnap_data_candidate_gen_rationale_11",
+      "src_pathsnap_data_candidate_gen_rationale_23",
+      "src_pathsnap_data_candidate_gen_rationale_41",
+      "src_pathsnap_data_candidate_gen_rationale_54",
+      "src_pathsnap_data_feature_eng",
+      "src_pathsnap_data_feature_eng_build_dataset",
+      "src_pathsnap_data_feature_eng_build_test_dataset",
+      "src_pathsnap_data_feature_eng_extract_features_for_trip",
+      "src_pathsnap_data_feature_eng_match_track_to_route",
+      "src_pathsnap_data_feature_eng_rationale_1",
+      "src_pathsnap_data_feature_eng_rationale_122",
+      "src_pathsnap_data_feature_eng_rationale_157",
+      "src_pathsnap_data_feature_eng_rationale_32",
+      "src_pathsnap_data_feature_eng_rationale_65",
+      "src_pathsnap_data_legacy_eda",
+      "src_pathsnap_data_legacy_eda_load_arcs",
+      "src_pathsnap_data_legacy_eda_load_nodes",
+      "src_pathsnap_data_legacy_eda_load_route",
+      "src_pathsnap_data_legacy_eda_load_trip_track",
+      "src_pathsnap_data_legacy_eda_rationale_1",
+      "src_pathsnap_data_legacy_eda_run_eda",
+      "src_pathsnap_decoder_hmm_viterbi",
+      "src_pathsnap_decoder_hmm_viterbi_rationale_1",
+      "src_pathsnap_decoder_hmm_viterbi_rationale_118",
+      "src_pathsnap_decoder_hmm_viterbi_reconstruct_route_for_trip",
+      "src_pathsnap_decoder_hmm_viterbi_reconstruct_route_for_trip_calc_continuity",
+      "src_pathsnap_visualization_folium_viz",
+      "src_pathsnap_visualization_folium_viz_generate_trip_map",
+      "src_pathsnap_visualization_folium_viz_rationale_1"
+    ],
+    "4": [
+      "joblib",
+      "matplotlib_pyplot",
+      "optuna",
+      "seaborn",
+      "sklearn_linear_model",
+      "sklearn_metrics",
+      "sklearn_model_selection",
+      "sklearn_neural_network",
+      "sklearn_tree",
+      "src_pathsnap_evaluation_metrics",
+      "src_pathsnap_evaluation_metrics_compute_metrics",
+      "src_pathsnap_evaluation_metrics_py_dataframe",
+      "src_pathsnap_evaluation_metrics_py_ndarray",
+      "src_pathsnap_evaluation_metrics_rationale_1",
+      "src_pathsnap_evaluation_metrics_top1_point_accuracy",
+      "src_pathsnap_models_benchmark",
+      "src_pathsnap_models_benchmark_compute_top1_accuracy_and_continuity",
+      "src_pathsnap_models_benchmark_rationale_1",
+      "src_pathsnap_models_benchmark_rationale_53",
+      "src_pathsnap_models_benchmark_train_and_evaluate_models",
+      "src_pathsnap_models_scorer",
+      "src_pathsnap_models_scorer_rationale_1",
+      "src_pathsnap_tuning_bayesian_opt",
+      "src_pathsnap_tuning_bayesian_opt_rationale_1",
+      "src_pathsnap_tuning_bayesian_opt_run_bayesian_optimization",
+      "src_pathsnap_tuning_bayesian_opt_run_bayesian_optimization_objective"
+    ],
+    "5": [
+      "pandas",
+      "src_pathsnap_data_preprocessing_eda",
+      "src_pathsnap_data_preprocessing_eda_main",
+      "src_pathsnap_data_preprocessing_eda_make_folium_map",
+      "src_pathsnap_data_preprocessing_eda_py_dataframe",
+      "src_pathsnap_data_preprocessing_eda_rationale_1",
+      "src_pathsnap_data_preprocessing_eda_summarize_partition",
+      "src_pathsnap_data_preprocessing_io_utils",
+      "src_pathsnap_data_preprocessing_io_utils_discover_trips",
+      "src_pathsnap_data_preprocessing_io_utils_load_trip",
+      "src_pathsnap_data_preprocessing_io_utils_rationale_1",
+      "src_pathsnap_data_preprocessing_io_utils_rationale_35",
+      "src_pathsnap_data_preprocessing_io_utils_rawtrip",
+      "src_pathsnap_models_base",
+      "src_pathsnap_models_base_modelspec",
+      "src_pathsnap_models_base_modelspec_fit",
+      "src_pathsnap_models_base_modelspec_make_x",
+      "src_pathsnap_models_base_py_dataframe",
+      "src_pathsnap_models_base_rationale_1",
+      "src_pathsnap_models_base_rationale_34",
+      "src_pathsnap_models_base_register",
+      "typing"
+    ],
+    "6": [
+      "any",
+      "src_pathsnap_models_extra_tree_extratreemodel",
+      "src_pathsnap_models_extra_tree_extratreemodel_fit",
+      "src_pathsnap_models_extra_tree_extratreemodel_init",
+      "src_pathsnap_models_extra_tree_extratreemodel_is_fitted",
+      "src_pathsnap_models_extra_tree_extratreemodel_load",
+      "src_pathsnap_models_extra_tree_extratreemodel_predict",
+      "src_pathsnap_models_extra_tree_extratreemodel_predict_candidate_scores",
+      "src_pathsnap_models_extra_tree_extratreemodel_save",
+      "src_pathsnap_models_extra_tree_py_path",
+      "src_pathsnap_models_extra_tree_rationale_22",
+      "src_pathsnap_models_extra_tree_rationale_53",
+      "src_pathsnap_models_extra_tree_rationale_62",
+      "src_pathsnap_models_extra_tree_rationale_69",
+      "src_pathsnap_models_extra_tree_rationale_76",
+      "src_pathsnap_models_extra_tree_rationale_82",
+      "src_pathsnap_models_extra_tree_rationale_96"
+    ],
+    "7": [
+      "fastapi",
+      "fastapi_middleware_cors",
+      "get",
+      "logging",
+      "on_event",
+      "pathsnap_decoder_hmm_viterbi",
+      "post",
+      "pydantic",
+      "src_pathsnap_service_api",
+      "src_pathsnap_service_api_evaluate_trip",
+      "src_pathsnap_service_api_health_check",
+      "src_pathsnap_service_api_list_available_trips",
+      "src_pathsnap_service_api_load_model_on_startup",
+      "src_pathsnap_service_api_rationale_1",
+      "src_pathsnap_service_api_rationale_61",
+      "uvicorn"
+    ],
+    "8": [
+      "pyproj",
+      "scipy_spatial",
+      "shapely_geometry",
+      "src_pathsnap_random_forest",
+      "src_pathsnap_random_forest_angle_diff",
+      "src_pathsnap_random_forest_bearing_deg",
+      "src_pathsnap_random_forest_find_trip_folders",
+      "src_pathsnap_random_forest_main",
+      "src_pathsnap_random_forest_make_edges",
+      "src_pathsnap_random_forest_process_trip",
+      "src_pathsnap_random_forest_project_xy",
+      "src_pathsnap_random_forest_py_path",
+      "src_pathsnap_random_forest_rationale_1",
+      "src_pathsnap_random_forest_read_trip",
+      "warnings"
+    ],
+    "9": [
+      "src_pathsnap_decoder_hmm_viterbi_hmmroutedecoder",
+      "src_pathsnap_decoder_hmm_viterbi_hmmroutedecoder_compute_transition_log_prob",
+      "src_pathsnap_decoder_hmm_viterbi_hmmroutedecoder_decode",
+      "src_pathsnap_decoder_hmm_viterbi_hmmroutedecoder_init",
+      "src_pathsnap_decoder_hmm_viterbi_rationale_14",
+      "src_pathsnap_decoder_hmm_viterbi_rationale_46"
+    ],
+    "10": [
+      "src_pathsnap_models_scorer_candidatescorer_emission_log_prob",
+      "src_pathsnap_models_scorer_candidatescorer_predict_proba",
+      "src_pathsnap_models_scorer_py_dataframe",
+      "src_pathsnap_models_scorer_py_ndarray",
+      "src_pathsnap_models_scorer_rationale_36",
+      "src_pathsnap_models_scorer_rationale_40"
+    ],
+    "11": [
+      "folium",
+      "requests",
+      "src_pathsnap_ui_app",
+      "src_pathsnap_ui_app_rationale_1",
+      "streamlit"
+    ],
+    "12": [
+      "src_pathsnap_data_preprocessing_init",
+      "src_pathsnap_data_preprocessing_init_rationale_1"
+    ],
+    "13": [
+      "src_pathsnap_init",
+      "src_pathsnap_init_rationale_1"
+    ],
+    "14": [
+      "src_pathsnap_service_init",
+      "src_pathsnap_service_init_rationale_1"
+    ],
+    "15": [
+      "src_pathsnap_ui_init",
+      "src_pathsnap_ui_init_rationale_1"
+    ],
+    "16": [
+      "src_init"
+    ],
+    "17": [
+      "src_pathsnap_data_init"
+    ],
+    "18": [
+      "src_pathsnap_decoder_init"
+    ],
+    "19": [
+      "src_pathsnap_evaluation_init"
+    ],
+    "20": [
+      "src_pathsnap_models_init"
+    ],
+    "21": [
+      "src_pathsnap_tuning_init"
+    ],
+    "22": [
+      "src_pathsnap_visualization_init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.07058001397624039,
+    "1": 0.07585568917668825,
+    "2": 0.06155632984901278,
+    "3": 0.08780487804878048,
+    "4": 0.09846153846153846,
+    "5": 0.13852813852813853,
+    "6": 0.13970588235294118,
+    "7": 0.13333333333333333,
+    "8": 0.22857142857142856,
+    "9": 0.4,
+    "10": 0.4666666666666667,
+    "11": 0.4,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_pathsnap_data_preprocessing_road_graph_roadgraph",
+      "label": "RoadGraph",
+      "degree": 12
+    },
+    {
+      "id": "src_pathsnap_decoder_hmm_viterbi_reconstruct_route_for_trip",
+      "label": "reconstruct_route_for_trip()",
+      "degree": 11
+    },
+    {
+      "id": "src_pathsnap_data_feature_eng_extract_features_for_trip",
+      "label": "extract_features_for_trip()",
+      "degree": 10
+    },
+    {
+      "id": "src_pathsnap_data_preprocessing_features_build_candidates_table",
+      "label": "build_candidates_table()",
+      "degree": 10
+    },
+    {
+      "id": "src_pathsnap_data_preprocessing_pipeline_process_partition",
+      "label": "process_partition()",
+      "degree": 10
+    },
+    {
+      "id": "src_pathsnap_data_preprocessing_geo_haversine_m",
+      "label": "haversine_m()",
+      "degree": 9
+    },
+    {
+      "id": "src_pathsnap_models_extra_tree_extratreemodel",
+      "label": "ExtraTreeModel",
+      "degree": 9
+    },
+    {
+      "id": "src_pathsnap_models_scorer_candidatescorer",
+      "label": "CandidateScorer",
+      "degree": 9
+    },
+    {
+      "id": "src_pathsnap_random_forest_process_trip",
+      "label": "process_trip()",
+      "degree": 8
+    },
+    {
+      "id": "src_pathsnap_data_candidate_gen_generate_candidates_for_trip",
+      "label": "generate_candidates_for_trip()",
+      "degree": 7
+    }
+  ],
+  "surprises": [
+    {
+      "source": "main()",
+      "target": "compute_metrics()",
+      "source_files": [
+        "scripts/evaluate_models.py",
+        "src/pathsnap/evaluation/metrics.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "main()",
+      "target": "make_mock_features()",
+      "source_files": [
+        "scripts/generate_mock_data.py",
+        "src/pathsnap/data/build_features.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `main()` unexpectedly reaches hub `make_mock_features()`"
+    },
+    {
+      "source": "main()",
+      "target": "render_markdown()",
+      "source_files": [
+        "scripts/train_all_models.py",
+        "src/pathsnap/evaluation/compare_models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `render_markdown()` unexpectedly reaches hub `main()`"
+    },
+    {
+      "source": "main()",
+      "target": "load_dataset()",
+      "source_files": [
+        "scripts/evaluate_models.py",
+        "src/pathsnap/evaluation/compare_models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "main()",
+      "target": "CandidateScorer",
+      "source_files": [
+        "scripts/evaluate_models.py",
+        "src/pathsnap/models/scorer.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

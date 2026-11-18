@@ -49,14 +49,43 @@
 
   .team-table td {
     border: 1px solid #cbd5e0;
-    padding: 5px 8px;
-    font-size: 8.2pt;
+    padding: 4px 6px;
+    font-size: 8pt;
     background: #f8fafc;
+    vertical-align: top;
   }
 
   .team-member-name {
-    font-weight: 600;
+    font-weight: 700;
     color: #2b6cb0;
+    font-size: 8.5pt;
+  }
+
+  .student-name {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 8.2pt;
+    display: block;
+  }
+
+  .srn-badge {
+    display: inline-block;
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    border: 1px solid #bee3f8;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 7.2pt;
+    font-family: monospace;
+    font-weight: 600;
+    margin: 1px 0 2px 0;
+  }
+
+  .role-desc {
+    font-size: 7.2pt;
+    color: #4a5568;
+    display: block;
+    line-height: 1.25;
   }
 
   h2 {
@@ -171,10 +200,30 @@
 
 <table class="team-table">
   <tr>
-    <td width="25%"><span class="team-member-name">Member 1 (Mokshith)</span><br>EDA, Preprocessing Pipeline, Spatial Features, LightGBM</td>
-    <td width="25%"><span class="team-member-name">Member 2 (Naveen)</span><br>CatBoost Model, RBF SVM Baseline, Hyperparameter Tuning</td>
-    <td width="25%"><span class="team-member-name">Member 3 (Kritheesh)</span><br>Random Forest Experiments, Candidate Generation Checks</td>
-    <td width="25%"><span class="team-member-name">Member 4 (Nandita)</span><br>Extra Trees Model, HMM Viterbi Decoder, API/UI Integration</td>
+    <td width="25%">
+      <span class="team-member-name">Member 1 (Mokshith)</span>
+      <span class="student-name">MokshitReddy Nallaballe</span>
+      <span class="srn-badge">PES2UG24CS824</span>
+      <span class="role-desc">EDA, Preprocessing Pipeline, Spatial Features, LightGBM</span>
+    </td>
+    <td width="25%">
+      <span class="team-member-name">Member 2 (Naveen)</span>
+      <span class="student-name">Naveen Karthikeyan</span>
+      <span class="srn-badge">PES2UG24CS306</span>
+      <span class="role-desc">CatBoost Model, RBF SVM Baseline, Hyperparameter Tuning</span>
+    </td>
+    <td width="25%">
+      <span class="team-member-name">Member 3 (Kritheesh)</span>
+      <span class="student-name">Kritheesh NV</span>
+      <span class="srn-badge">PES2UG24CS293</span>
+      <span class="role-desc">Random Forest Experiments, Candidate Generation Checks</span>
+    </td>
+    <td width="25%">
+      <span class="team-member-name">Member 4 (Nandita)</span>
+      <span class="student-name">Nandita</span>
+      <span class="srn-badge">PES2UG24CS304</span>
+      <span class="role-desc">Extra Trees Model, HMM Viterbi Decoder, API/UI Integration</span>
+    </td>
   </tr>
 </table>
 
@@ -417,6 +466,7 @@
   <thead>
     <tr>
       <th>Team Member</th>
+      <th>Student Name & SRN</th>
       <th>Primary Technical Contributions</th>
       <th>Git Commits & Signatures</th>
     </tr>
@@ -424,21 +474,25 @@
   <tbody>
     <tr>
       <td><strong>Member 1 (Mokshith)</strong></td>
+      <td><strong>MokshitReddy Nallaballe</strong><br><code>PES2UG24CS824</code></td>
       <td>Exploratory Data Analysis (EDA), spatial UTM KD-tree index, candidate generation pipeline, feature engineering (<code>bearing_alignment_deg</code>, <code>dist_to_segment_m</code>), LightGBM implementation.</td>
       <td><code>wingsfry</code> / <code>Mokshith Reddy</code></td>
     </tr>
     <tr>
       <td><strong>Member 2 (Naveen)</strong></td>
+      <td><strong>Naveen Karthikeyan</strong><br><code>PES2UG24CS306</code></td>
       <td>CatBoost model training and optimization, RBF SVM baseline benchmarking, hyperparameter search exploration.</td>
       <td><code>nxssa1</code></td>
     </tr>
     <tr>
       <td><strong>Member 3 (Kritheesh)</strong></td>
+      <td><strong>Kritheesh NV</strong><br><code>PES2UG24CS293</code></td>
       <td>Random Forest classifier training, feature importance checks, candidate search radius verification.</td>
       <td><code>Kritheesh</code></td>
     </tr>
     <tr>
       <td><strong>Member 4 (Nandita)</strong></td>
+      <td><strong>Nandita</strong><br><code>PES2UG24CS304</code></td>
       <td>Extra Trees model implementation, repository restructuring, distance-aware HMM Viterbi decoder, FastAPI and Streamlit dashboard glue.</td>
       <td><code>NanditaPatil-dotcom</code></td>
     </tr>

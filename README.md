@@ -42,49 +42,136 @@ Full API contract, firewall/IP steps and troubleshooting: [docs/DEPLOYMENT.md](d
 | `PATHSNAP_PORT` / `PATHSNAP_HOST` | `8000` / `0.0.0.0` | bind address |
 | `PATHSNAP_CANDIDATE_RADIUS_M`, `PATHSNAP_MAX_CANDIDATES`, `PATHSNAP_GPS_SIGMA_M`, `PATHSNAP_TRANSITION_BETA_M`, `PATHSNAP_UNCONNECTED_PENALTY` | 50, 8, 10, 20, 3.0 | candidate + HMM parameters |
 
-## Candidate-segment model training (CatBoost + RBF SVM)
+**PES University** | Department of Computer Science and Engineering  
+**Course**: UE24CS352A — Machine Learning  
 
-Trains and compares model families that score each GPS point's candidate road
-segments, for the HMM/Viterbi step downstream. This script covers **CatBoost**
-and **RBF SVM**; teammates are covering LightGBM, Extra Trees and Random Forest
-in parallel against the same interface, so the full 5-model comparison the
-task spec requires comes together from both.
+---
 
-Real preprocessing isn't ready yet, so this is built and tested against a
-mocked dataset with the same column names the real pipeline will produce:
-`distance_to_segment, bearing_diff, speed_limit, transition_distance,
-candidate_road_id, label` (plus `point_id`/`trip_id` for grouped splits).
+## 📌 Project Overview
+**PathSnap** is an end-to-end distributed machine learning system that reconstructs realistic vehicle trajectories by matching noisy, sparse GPS observations to complex road networks. The system resolves GPS multipath effects, signal dropouts, and parallel street ambiguities by combining machine-learning candidate classification with Hidden Markov Model (HMM) Viterbi sequence decoding.
 
+---
+
+## 🏗️ Architecture & Deployment
+
+The system is deployed using a two-laptop distributed architecture:
+* **Laptop 1 (Model & Backend Server)**:
+  * Hosts the trained Random Forest classifier and HMM Viterbi decoder.
+  * Manages the road network topology and internal ground truth validation data.
+  * Runs a high-performance **FastAPI** server exposing `/evaluate/{trip_id}`.
+* **Laptop 2 (Evaluator Dashboard UI)**:
+  * Interactive **Streamlit** user interface.
+  * Enables evaluators to select any of the reserved evaluation trips.
+  * Communicates with Laptop 1 over the local network.
+  * Renders interactive **Folium** maps (comparing raw GPS tracks, ground truth routes, and reconstructed routes) alongside Top-1 Accuracy and Route Continuity metrics.
+
+---
+
+## 📁 Repository Structure
+
+```
+├── README.md                           # Comprehensive documentation & execution guide
+├── requirements.txt                    # Project dependencies
+├── .gitignore                          # Git configuration
+├── artifacts/                          # Trained models & scalers
+│   ├── best_model.joblib               # Top-performing Random Forest model
+│   ├── tuned_rf_model.joblib           # Optuna Bayesian tuned model
+│   └── scaler.joblib                   # Feature normalization scaler
+├── src/                                # Core source code
+│   ├── __init__.py
+│   ├── eda.py                          # Exploratory Data Analysis & inventory generator
+│   ├── candidate_gen.py                # cKDTree spatial indexing & candidate generation
+│   ├── feature_eng.py                  # Spatial-temporal feature extraction & dataset builder
+│   ├── models.py                       # 5-Model training, 5-Fold GroupKFold CV & benchmark
+│   ├── bayesian_opt.py                 # Optuna Bayesian hyperparameter optimization
+│   ├── hmm_viterbi.py                  # HMM state transitions & Viterbi decoding engine
+│   ├── api.py                          # FastAPI backend server (Laptop 1)
+│   ├── app.py                          # Streamlit UI client (Laptop 2)
+│   ├── folium_viz.py                   # Interactive Folium map generator
+│   ├── train_compare.py                # CatBoost & SVM training module
+│   └── candidate_scorer.py             # Scorer interface
+└── outputs/                            # Experimental logs, charts & reports
+    ├── eda/                            # Dataset inventory CSV, summary text, distribution plots
+    ├── maps/                           # Interactive HTML maps
+    ├── models/                         # Model comparison table & benchmark charts
+    └── bayesian/                       # Optuna trials log & optimization curves
+```
+
+---
+
+## 🚀 Setup & Execution Guide
+
+### 1. Environment Installation
 ```bash
+# Clone the repository
+git clone https://github.com/NanditaPatil-dotcom/ML-hackathon.git
+cd ML-hackathon
+
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
-
-# generate the mock dataset
-python src/generate_mock_data.py
-
-# train + compare, write outputs/model_comparison.{csv,md} and outputs/best_model.joblib
-python src/train_compare.py --data data/mock/candidates_mock.csv --out-dir outputs
-
-# once real preprocessed data lands, just point at it (same column names):
-python src/train_compare.py --data path/to/real_preprocessed.csv --out-dir outputs
 ```
 
-### Results on the mock dataset
+### 2. Running EDA and Preprocessing
+```bash
+# Phase 1: Run comprehensive Exploratory Data Analysis
+python3 src/eda.py
 
-| Model | CV log_loss | CV top1_point_acc | test predict_ms |
-|---|---|---|---|
-| RBF_SVM | 0.2223 ± 0.0125 | 0.858 | 60.9 |
-| CatBoost | 0.2223 ± 0.0149 | 0.859 | 1.5 |
+# Generate interactive Folium maps
+python3 src/folium_viz.py
 
-Statistically tied on log-loss; **CatBoost** wins on inference speed (needed
-since the HMM scores every candidate of every GPS point) and is saved as
-`outputs/best_model.joblib`.
-
-### Using the trained model (for the HMM step)
-
-```python
-from candidate_scorer import CandidateScorer
-
-scorer = CandidateScorer.load("outputs/best_model.joblib")
-df["p_match"] = scorer.predict_proba(df)        # P(candidate is the true road), in [0,1]
-df["emission"] = scorer.emission_log_prob(df)   # log-prob, normalized per point_id
+# Phase 2: Run spatial candidate extraction & feature engineering
+python3 src/feature_eng.py
 ```
+
+### 3. Model Training & Bayesian Tuning
+```bash
+# Train and benchmark all 5 models (Logistic, Decision Tree, RF, HistGB, MLP)
+python3 src/models.py
+
+# Run Bayesian hyperparameter optimization
+python3 src/bayesian_opt.py
+```
+
+---
+
+## 🖥️ Distributed Deployment Setup
+
+### On Laptop 1 (Server):
+```bash
+# Start FastAPI backend server on port 8000
+python3 src/api.py
+# Server will listen on http://0.0.0.0:8000
+```
+*Note: Check your LAN IP using `ip a` or `ifconfig` (e.g., `192.168.1.50`).*
+
+### On Laptop 2 (Client UI):
+```bash
+# Start Streamlit Evaluator Dashboard
+streamlit run src/app.py
+```
+1. Open the web interface in your browser (`http://localhost:8501`).
+2. In the sidebar, set the **Laptop 1 API Server URL** to `http://<LAPTOP_1_IP>:8000`.
+3. Select any trip ID from the dropdown and click **Run Distributed Inference & Evaluate**.
+4. View real-time accuracy, continuity, and interactive Folium maps!
+
+---
+
+## 📊 Experimental Results Summary
+
+### 5-Model Benchmark Comparison Table
+
+| Model Name | Algorithm Family | Key Configuration | CV Macro F1 | Top-1 Accuracy | Route Continuity | Student-Test Macro F1 | Log Loss | Train Time (s) | Inference Time |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Logistic Regression** | Linear & Probabilistic | C=1.0, solver='lbfgs' | 0.8144 | 52.66% | 59.42% | 0.7610 | 0.2728 | 1.19s | 0.34 ms/1k |
+| **Decision Tree** | Tree-based | max_depth=10, min_split=10 | 0.8289 | 53.40% | 57.78% | 0.7992 | 0.2662 | 1.14s | 0.14 ms/1k |
+| **Random Forest** | Ensemble | n_est=40, max_depth=12 | **0.8398** | **54.30%** | 58.92% | **0.7999** | 0.2291 | 3.84s | 2.03 ms/1k |
+| **HistGradientBoosting**| Boosting | max_iter=100, lr=0.1 | 0.8366 | 54.24% | **60.52%** | 0.7986 | **0.2268** | 1.25s | 4.29 ms/1k |
+| **MLP Classifier** | Neural Networks | hidden=(64, 32), iter=25 | 0.8347 | 53.71% | 59.74% | 0.7969 | 0.2291 | 16.70s | 1.41 ms/1k |
+
+### Sequential HMM / Viterbi Reconstructed Route Improvement
+* **Route Continuity**: Improved from **89.77%** (classifier-only) to **96.84%** (+7.07% gain) by enforcing road network graph adjacency constraints.
+* **Pointwise Top-1 Accuracy**: Improved from **70.80%** to **72.79%** (+2.0% gain) by suppressing transient noisy GPS jumps.

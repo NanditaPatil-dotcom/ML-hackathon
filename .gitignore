@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .venv/
 data/demo/
+.ipynb_checkpoints/
+catboost_info/

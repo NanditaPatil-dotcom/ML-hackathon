@@ -29,7 +29,6 @@ results/metrics/     model_comparison.csv / .md, summary.json, student_test_eval
 results/figures/     reserved for plots
 results/maps/        reserved for matched-route visualizations
 report/              final writeup (not owned by any thread yet)
-api/, ui/            FastAPI service + UI (separate thread/PR)
 hmm/                 HMM/Viterbi decoder (separate thread/PR)
 ```
 
@@ -55,33 +54,6 @@ preprocessing and modeling:
   to evaluation trips.
 - `is_ground_truth_arc` — label
 - `trip_id`, `point_idx` — grouping for CV splits / top-1 accuracy
-
-```bash
-pip install -r requirements-api.txt
-
-# Laptop 1 (API)
-python -m api.main                 # or run_api.bat; serves http://0.0.0.0:8000, docs at /docs
-
-# Laptop 2 (UI)
-cd ui && python -m http.server 5500   # or run_ui.bat
-# open http://localhost:5500/?api=http://<LAPTOP1_IP>:8000
-python scripts/client.py --api http://<LAPTOP1_IP>:8000 --all
-```
-
-Try it without the real data: `python scripts/make_demo_data.py data/demo` then `PATHSNAP_DATA_DIR=data/demo python -m api.main`.
-
-Full API contract, firewall/IP steps and troubleshooting: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-
-### Configuration (environment variables)
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `PATHSNAP_DATA_DIR` | `data/raw` | root of raw trip files (searched recursively) |
-| `PATHSNAP_MODEL_PATH` | `models/final_model.joblib` | trained classifier; heuristic fallback if missing |
-| `PATHSNAP_EVAL_TRIPS` | — | comma-separated trip IDs to list in the UI |
-| `PATHSNAP_EVAL_SUBDIR` | `eval` | otherwise, list trips in folders whose name contains this |
-| `PATHSNAP_PORT` / `PATHSNAP_HOST` | `8000` / `0.0.0.0` | bind address |
-| `PATHSNAP_CANDIDATE_RADIUS_M`, `PATHSNAP_MAX_CANDIDATES`, `PATHSNAP_GPS_SIGMA_M`, `PATHSNAP_TRANSITION_BETA_M`, `PATHSNAP_UNCONNECTED_PENALTY` | 50, 8, 10, 20, 3.0 | candidate + HMM parameters |
 
 **PES University** | Department of Computer Science and Engineering  
 **Course**: UE24CS352A — Machine Learning  

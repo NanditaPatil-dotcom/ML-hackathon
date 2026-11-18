@@ -1,1 +1,0 @@
-"""PathSnap FastAPI server package."""

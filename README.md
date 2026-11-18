@@ -129,8 +129,8 @@ bash scripts/run_server.sh                            # FastAPI on 0.0.0.0:8000
 `GET /trips` lists the `evaluator_test` trips when that folder exists, falling
 back to `student_test`. `POST /evaluate/{trip_id}` runs candidate generation,
 CatBoost scoring and HMM/Viterbi decoding, then scores the prediction against the
-server-side `.route` file. Ground truth never leaves Laptop 1 except as the
-reference layer drawn after scoring.
+server-side `.route` file. Ground truth never leaves Laptop 1: the response
+carries only the GPS points, the predicted route and the accuracy numbers.
 
 On Laptop 2, run `bash scripts/run_ui.sh` (Streamlit, port 8501) and enter
 `http://<LAPTOP1_IP>:8000` in the sidebar. The older root artifact

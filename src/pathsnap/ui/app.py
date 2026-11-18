@@ -232,7 +232,8 @@ if "last_result" in st.session_state:
                 opacity=0.85
             ).add_to(fg_gt)
 
-    fg_gt.add_to(m)
+    if gt_segments:
+        fg_gt.add_to(m)
 
     # --------------------------------------------------
     # PREDICTED ROUTE

@@ -125,7 +125,6 @@ def evaluate_trip(trip_id: str):
     track = res["track"]
     nodes = res["nodes"]
     arcs = res["arcs"]
-    route = res["route"]
     hmm_path = []
     for t in sorted(res["hmm_path"]):  # one arc per GPS point -> drop consecutive repeats
         if not hmm_path or hmm_path[-1] != res["hmm_path"][t]:
@@ -135,18 +134,9 @@ def evaluate_trip(trip_id: str):
     xy = track[["lon", "lat"]].to_numpy()
     gps_coords = [[float(p[1]), float(p[0])] for p in xy[::max(1, len(xy)//400)]]
     
-    # Ground truth route segments (lat, lon pairs)
-    gt_segments = []
-    if route is not None:
-        for arc_id in route:
-            if arc_id < len(arcs):
-                u, v = arcs[arc_id]
-                if u < len(nodes) and v < len(nodes):
-                    gt_segments.append([
-                        [float(nodes[u, 1]), float(nodes[u, 0])],
-                        [float(nodes[v, 1]), float(nodes[v, 0])]
-                    ])
-                    
+    # Ground truth stays on this server: it is only used above to score the
+    # prediction and is never sent to the UI.
+
     # Predicted route segments (lat, lon pairs)
     pred_segments = []
     for arc_id in hmm_path:
@@ -165,7 +155,6 @@ def evaluate_trip(trip_id: str):
         "num_gps_observations": len(track),
         "metrics": res["metrics"],
         "gps_coords": gps_coords,
-        "ground_truth_segments": gt_segments,
         "predicted_segments": pred_segments
     }
 

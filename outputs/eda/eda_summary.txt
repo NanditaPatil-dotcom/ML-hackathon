@@ -1,0 +1,19 @@
+================ PATHSNAP EXPLORATORY DATA ANALYSIS ================
+Total Trips Analyzed: 90
+Training Trips: 80
+Student Test Trips: 10
+
+--- GPS TRACK STATISTICS ---
+Total GPS Observations: 227,577
+Avg Observations/Trip: 2528.6 (std: 3157.0)
+Min/Max Observations: 262 / 19313
+Avg Trip Duration: 5274.2 seconds (~87.9 mins)
+Sampling Regularity: 94.32% of steps are exactly 1 second apart
+Total Significant Gaps (>2s): 3075
+Avg Vehicle Speed: 49.1 km/h (13.6 m/s)
+
+--- ROAD NETWORK STATISTICS ---
+Avg Road Network Nodes per Trip: 22490.8
+Avg Arcs (Directed Road Segments) per Trip: 45132.7
+Avg Graph Out-Degree: 2.02
+Avg Route Length: 386.8 road segments

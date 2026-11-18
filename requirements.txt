@@ -7,3 +7,13 @@ lightgbm
 joblib
 pyyaml
 pyarrow
+fastapi
+uvicorn[standard]
+streamlit
+requests
+folium
+optuna
+matplotlib
+seaborn
+shapely
+pyproj

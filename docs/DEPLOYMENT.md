@@ -52,7 +52,8 @@ Metric definitions (all computed server-side against `<trip>.route`):
 
 1. Clone the repo, then `pip install -r requirements-api.txt`.
 2. Put the raw trip files under `data/raw/` (any sub-folders are fine; every `<trip>.track` with its `.nodes/.arcs/.route` siblings becomes a trip). Put the 10 evaluator trips in a folder whose name contains `eval` (e.g. `data/raw/evaluator_test/`), **or** set `PATHSNAP_EVAL_TRIPS=id1,id2,...`.
-3. Put the final model at `models/final_model.joblib` (any sklearn-style estimator/pipeline with `predict_proba`; train it on a DataFrame so `feature_names_in_` is saved and the API feeds the right columns). Without it the API still works using a heuristic scorer and `/health` says `STUB`.
+3. Model: the API loads `models/final_model.joblib` if present, else `outputs/best_model.joblib` (the training script's output, a `CandidateScorer` from `src/candidate_scorer.py`). It feeds the model the columns `distance_to_segment, bearing_diff, speed_limit, transition_distance, candidate_road_id`. If loading fails, the API falls back to a heuristic scorer and `/health` says `STUB`.
+   The HMM decoder comes from `hmm/api_adapter.py` when that folder exists; otherwise a builtin Viterbi is used (`/health` → `route_reconstruction` says which).
 4. Start: `run_api.bat` (or `python -m api.main`). You should see `Uvicorn running on http://0.0.0.0:8000`.
 5. Check locally: open `http://localhost:8000/health` in a browser.
 

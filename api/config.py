@@ -13,7 +13,15 @@ PORT = int(os.getenv("PATHSNAP_PORT", "8000"))
 
 # Trained road-candidate classifier (joblib/pickle with predict_proba). Optional:
 # when missing, a distance+heading heuristic scores candidates instead.
-MODEL_PATH = Path(os.getenv("PATHSNAP_MODEL_PATH", ROOT / "models" / "final_model.joblib"))
+# Default: models/final_model.joblib if present, else the training script's outputs/best_model.joblib.
+_default_model = ROOT / "models" / "final_model.joblib"
+if not _default_model.exists():
+    _default_model = ROOT / "outputs" / "best_model.joblib"
+MODEL_PATH = Path(os.getenv("PATHSNAP_MODEL_PATH", _default_model))
+
+# The raw dataset has no speed limits; this value fills the model's speed_limit (km/h) column
+# until preprocessing defines a real one.
+DEFAULT_SPEED_LIMIT_KMH = float(os.getenv("PATHSNAP_DEFAULT_SPEED_LIMIT_KMH", "50"))
 
 # Raw dataset root. Every <trip>.track found below it (recursively) is a trip,
 # with sibling <trip>.nodes / <trip>.arcs / <trip>.route files.

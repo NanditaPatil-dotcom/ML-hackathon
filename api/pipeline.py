@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import math
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -19,6 +20,14 @@ import numpy as np
 from . import config
 
 log = logging.getLogger("pathsnap.pipeline")
+# Teammates' code: src/ (candidate_scorer, needed to unpickle the model) and hmm/ (Viterbi).
+for _p in (config.ROOT / "src", config.ROOT):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
+try:
+    from hmm.api_adapter import viterbi_for_api  # HMM team's decoder
+except ImportError:
+    viterbi_for_api = None
 EARTH_R = 6_371_000.0
 
 
@@ -105,26 +114,31 @@ class Layer:
     arc_ids: np.ndarray
     dist_m: np.ndarray
     snapped: np.ndarray  # (k, 2) lon, lat
-    features: np.ndarray  # (k, n_features)
+    features: Dict[str, np.ndarray]  # feature name -> (k,) values
     scores: np.ndarray = None  # classifier probabilities
 
 
-FEATURES_DEFAULT = ["dist_to_arc_m", "bearing_diff_deg", "speed_mps", "arc_length_m", "frac_along_arc", "rank"]
+# Columns the model team trained on (src/candidate_scorer.py):
+#   distance_to_segment (m), bearing_diff (deg 0-180), speed_limit (km/h),
+#   transition_distance (m), candidate_road_id (arc_id)
+MODEL_FEATURES = ["distance_to_segment", "bearing_diff", "speed_limit", "transition_distance", "candidate_road_id"]
 
 
 class Pipeline:
     def __init__(self):
         self.model = self._load_model(config.MODEL_PATH)
         names = getattr(self.model, "feature_names_in_", None) if self.model is not None else None
-        self.feature_names: List[str] = list(names) if names is not None else FEATURES_DEFAULT
+        self.feature_names: List[str] = list(names) if names is not None else MODEL_FEATURES
 
     def status(self) -> Dict[str, str]:
         return {
             "cleaning": "builtin speed/duplicate filter",
             "candidates": f"builtin radius {config.CANDIDATE_RADIUS_M:.0f} m, top {config.MAX_CANDIDATES}",
-            "scoring": f"model {type(self.model).__name__} ({config.MODEL_PATH.name})" if self.model is not None
+            "scoring": f"model {getattr(self.model, 'model_name', type(self.model).__name__)} ({config.MODEL_PATH.name})"
+            if self.model is not None
             else "STUB heuristic (no trained model loaded)",
-            "route_reconstruction": "builtin HMM/Viterbi (connectivity-aware)",
+            "route_reconstruction": "hmm.api_adapter (Newson-Krumm HMM/Viterbi)" if viterbi_for_api
+            else "builtin HMM/Viterbi (connectivity-aware)",
         }
 
     @staticmethod
@@ -183,32 +197,41 @@ class Pipeline:
             else:
                 head, speed = None, 0.0
             bdiff = np.zeros(len(near)) if head is None else angle_diff(head, net.bearing[near])
+            snapped = np.column_stack([slon[near], slat[near]])
+            if layers:  # straight-line distance from the previous point's closest candidate
+                prev = layers[-1].snapped[0]
+                trans = haversine_m(prev[1], prev[0], snapped[:, 1], snapped[:, 0])
+            else:
+                trans = np.zeros(len(near))
             feats = {
-                "dist_to_arc_m": dist[near],
-                "bearing_diff_deg": bdiff,
+                "distance_to_segment": dist[near],
+                "bearing_diff": bdiff,
+                "speed_limit": np.full(len(near), config.DEFAULT_SPEED_LIMIT_KMH),
+                "transition_distance": trans,
+                "candidate_road_id": near.astype(int),
                 "speed_mps": np.full(len(near), speed),
-                "arc_length_m": net.length[near],
-                "frac_along_arc": frac[near],
-                "rank": np.arange(len(near), dtype=float),
             }
-            X = np.column_stack([feats.get(f, np.zeros(len(near))) for f in self.feature_names])
-            layers.append(Layer(int(i), near.astype(int), dist[near], np.column_stack([slon[near], slat[near]]), X))
+            layers.append(Layer(int(i), near.astype(int), dist[near], snapped, feats))
         return layers
 
     # -- stage 3: classifier scoring -----------------------------------------
     # INTEGRATION POINT (model team): drop final_model.joblib into models/ (any sklearn-style
     # estimator/pipeline with predict_proba + feature_names_in_). No code change needed.
     def score(self, layers: List[Layer]) -> None:
-        if self.model is not None:
+        if self.model is not None and layers:
             try:
-                X = np.vstack([L.features for L in layers])
-                if getattr(self.model, "feature_names_in_", None) is not None:
-                    import pandas as pd
+                import pandas as pd
 
-                    X = pd.DataFrame(X, columns=self.feature_names)
-                proba = self.model.predict_proba(X)[:, -1]  # one batched call per trip
+                cols = {f: np.concatenate([L.features.get(f, np.zeros(len(L.arc_ids))) for L in layers])
+                        for f in self.feature_names}
+                cols["point_id"] = np.concatenate([np.full(len(L.arc_ids), L.obs_index) for L in layers])
+                df = pd.DataFrame(cols)
+                if hasattr(self.model, "emission_log_prob"):  # model team's CandidateScorer wrapper
+                    proba = np.asarray(self.model.predict_proba(df))
+                else:  # plain sklearn-style estimator
+                    proba = self.model.predict_proba(df[self.feature_names])[:, -1]
                 ofs = 0
-                for L in layers:
+                for L in layers:  # one batched call per trip, split back per GPS point
                     L.scores = proba[ofs: ofs + len(L.arc_ids)]
                     ofs += len(L.arc_ids)
                 return
@@ -216,12 +239,17 @@ class Pipeline:
                 log.exception("Model scoring failed; falling back to heuristic")
         for L in layers:  # Gaussian GPS-noise likelihood x heading agreement
             e = np.exp(-0.5 * (L.dist_m / config.GPS_SIGMA_M) ** 2)
-            b = L.features[:, self.feature_names.index("bearing_diff_deg")] if "bearing_diff_deg" in self.feature_names else 0
+            b = L.features["bearing_diff"]
             L.scores = e * (0.7 + 0.3 * (0.5 + 0.5 * np.cos(np.radians(b))))
 
     # -- stage 4: HMM / Viterbi ---------------------------------------------
     # INTEGRATION POINT (HMM team): layers (with .scores as emissions) -> chosen candidate index per layer.
     def viterbi(self, net: RoadNetwork, track: np.ndarray, layers: List[Layer]) -> List[int]:
+        if viterbi_for_api is not None:
+            try:
+                return viterbi_for_api(net, track, layers)
+            except Exception:  # noqa: BLE001
+                log.exception("hmm.api_adapter failed; using builtin Viterbi")
         eps = 1e-9
         lp = np.log(layers[0].scores + eps)
         back = []

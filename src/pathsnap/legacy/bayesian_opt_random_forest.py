@@ -1,4 +1,6 @@
-"""
+"""LEGACY: earlier Random Forest search (results in results/archive/bayesian/). The current
+Bayesian optimisation is scripts/tune_catboost.py.
+
 PathSnap Bayesian Hyperparameter Optimization:
 Uses Optuna to optimize hyperparameters of the chosen top model (Random Forest)
 using 5-Fold GroupKFold Cross-Validation on training trips.

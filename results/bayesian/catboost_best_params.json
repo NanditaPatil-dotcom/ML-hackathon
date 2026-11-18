@@ -1,0 +1,17 @@
+{
+  "best_params": {
+    "iterations": 300,
+    "depth": 7,
+    "learning_rate": 0.02589255471132382,
+    "l2_leaf_reg": 7.5054639699677805,
+    "bagging_temperature": 1.7123914730730858,
+    "random_strength": 2.0742912474922917,
+    "border_count": 128,
+    "loss_function": "Logloss"
+  },
+  "search_cv_log_loss": 0.1548402954210182,
+  "n_trials": 25,
+  "search_rows": 448912,
+  "search_folds": 3,
+  "search_seconds": 729
+}

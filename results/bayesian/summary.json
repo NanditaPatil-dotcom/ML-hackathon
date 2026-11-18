@@ -1,0 +1,89 @@
+{
+  "model": "CatBoost",
+  "method": "Optuna TPE (seed 42); trial 0 enqueued as the untuned defaults so the search can only improve on them",
+  "objective": "Minimise mean CV log loss, 3-fold trip-grouped GroupKFold on a 60,000-GPS-point subsample of the 80 training trips (448,912 candidate rows). Log loss is used because the HMM consumes the probabilities as emissions.",
+  "n_trials": 25,
+  "search_space": {
+    "iterations": "int 200-1000, step 100",
+    "depth": "int 4-10",
+    "learning_rate": "float 0.02-0.3, log scale",
+    "l2_leaf_reg": "float 1-20, log scale",
+    "bagging_temperature": "float 0-3",
+    "random_strength": "float 0.1-5, log scale",
+    "border_count": "categorical {32, 64, 128, 254}"
+  },
+  "best_params": {
+    "iterations": 300,
+    "depth": 7,
+    "learning_rate": 0.02589255471132382,
+    "l2_leaf_reg": 7.5054639699677805,
+    "bagging_temperature": 1.7123914730730858,
+    "random_strength": 2.0742912474922917,
+    "border_count": 128
+  },
+  "untuned_params": {
+    "iterations": 500,
+    "depth": 6,
+    "learning_rate": 0.05,
+    "l2_leaf_reg": 3.0,
+    "bagging_temperature": 1.0,
+    "random_strength": 1.0,
+    "border_count": 254
+  },
+  "search_cv_log_loss": {
+    "best": 0.1548,
+    "untuned_trial_0": 0.1561
+  },
+  "comparison": [
+    {
+      "metric": "CV macro F1 (5-fold trip-grouped, all 80 train trips)",
+      "untuned": "0.8562",
+      "tuned": "0.8566"
+    },
+    {
+      "metric": "CV log loss",
+      "untuned": "0.1564",
+      "tuned": "0.1555"
+    },
+    {
+      "metric": "CV top-1 point accuracy",
+      "untuned": "0.7624",
+      "tuned": "0.7631"
+    },
+    {
+      "metric": "Student-test top-1 point accuracy",
+      "untuned": "0.7822",
+      "tuned": "0.7831"
+    },
+    {
+      "metric": "Student-test macro F1",
+      "untuned": "0.8659",
+      "tuned": "0.8665"
+    },
+    {
+      "metric": "Student-test log loss",
+      "untuned": "0.1356",
+      "tuned": "0.1357"
+    },
+    {
+      "metric": "Inference time (ms per 1,000 candidates)",
+      "untuned": "0.146",
+      "tuned": "0.118"
+    },
+    {
+      "metric": "Fit time on all training data (s)",
+      "untuned": "32.8",
+      "tuned": "20.6"
+    }
+  ],
+  "conclusion": "The tuned model is marginally better on cross-validation (log loss 0.1564 to 0.1555, macro F1 0.8562 to 0.8566) and on student-test top-1 and macro F1 (+0.001 and +0.0006), with student-test log loss unchanged (0.1356 vs 0.1357). These differences are far below the fold-to-fold standard deviation (about 0.03 in log loss), so tuning did not meaningfully change accuracy: the defaults were already near the optimum for these six features. The tuned model is smaller (300 trees vs 500) and fits about 37% faster (20.6 s vs 32.8 s) with 19% faster inference.",
+  "compute_cost": "25 trials in about 12 minutes (729 s) on 4 CPU cores; the untuned and tuned comparison (two 5-fold CVs plus two full refits) took about 8 more minutes.",
+  "files": {
+    "trials": "results/bayesian/catboost_trials.csv",
+    "best_params": "results/bayesian/catboost_best_params.json",
+    "history_plot": "results/bayesian/catboost_history.png",
+    "comparison": "results/metrics/catboost_tuned_vs_untuned.csv",
+    "model": "artifacts/models/catboost_tuned.joblib",
+    "script": "scripts/tune_catboost.py"
+  }
+}

@@ -217,6 +217,9 @@ if os.path.exists(bayes_path):
 <p><b>6. Tuned vs untuned</b> (same data partitions and metrics):</p>
 {table(comp)}
 <p>{html.escape(b.get('conclusion', ''))}</p>
+<p><b>Model served by the API:</b> artifacts/models/catboost_best.joblib (default configuration). The tuned model
+(artifacts/models/catboost_tuned.joblib) is kept for reference; since the accuracy difference is within noise we did not
+switch the demo to it. Tuning script: scripts/tune_catboost.py.</p>
 <p><b>Computational cost:</b> {html.escape(str(b.get('compute_cost', '')))}</p>
 {figs}
 """)

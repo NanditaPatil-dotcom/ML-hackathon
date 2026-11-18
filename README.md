@@ -19,7 +19,6 @@ src/pathsnap/
                                  generation
   models/                         Canonical model registry and five models
   evaluation/                     Metrics and grouped comparison
-  tuning/                         Bayesian hyperparameter optimization
   decoder/                        HMM/Viterbi route reconstruction
   service/                        FastAPI backend
   ui/                             Streamlit evaluator interface
@@ -105,6 +104,13 @@ Training-side CV and model selection use training trips. The ten
 `student_test` trips support development-stage comparison only. The separate
 evaluator-test partition must remain untouched. Detailed outputs are saved in
 `results/metrics/` and `results/figures/`.
+
+## Bayesian hyperparameter optimisation
+
+`scripts/tune_catboost.py` tunes the selected CatBoost model with Optuna (TPE,
+25 trials, trip-grouped CV log loss on training trips only), refits the best
+configuration and compares tuned vs untuned. Outputs: `results/bayesian/`,
+`results/metrics/catboost_tuned_vs_untuned.csv`, `artifacts/models/catboost_tuned.joblib`.
 
 ## API and UI
 

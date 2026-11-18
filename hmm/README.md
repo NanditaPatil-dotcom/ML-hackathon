@@ -100,3 +100,18 @@ the demo trip. Remaining errors are points right at intersections.
 `beta` (50 m): tolerance for route vs. straight-line mismatch. `turn_weight` (3):
 penalty for turns/U-turns. `backtrack_tol` (30 m): backward jitter on the same
 road that is ignored. `emission_weight` (1): trust in the model vs. the graph.
+
+## FastAPI integration (`api/pipeline.py`)
+
+`hmm.api_adapter.viterbi_for_api(net, track, layers)` has the same signature and
+return value as `Pipeline.viterbi` (chosen candidate index per layer), so the API
+stage can simply be:
+
+```python
+from hmm.api_adapter import viterbi_for_api
+
+def viterbi(self, net, track, layers):
+    return viterbi_for_api(net, track, layers)
+```
+
+Directed arcs are treated as one-way segments (a two-way street = two arcs).

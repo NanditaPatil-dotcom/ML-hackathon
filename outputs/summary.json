@@ -1,0 +1,12 @@
+{
+  "selected": "CatBoost",
+  "select_by": "log_loss",
+  "tied": [
+    "RBF_SVM",
+    "CatBoost"
+  ],
+  "ranking": {
+    "RBF_SVM": 0.22229,
+    "CatBoost": 0.22234
+  }
+}

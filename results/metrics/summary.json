@@ -2,10 +2,16 @@
   "selected": "CatBoost",
   "select_by": "log_loss",
   "tied": [
-    "CatBoost"
+    "CatBoost",
+    "LightGBM",
+    "ExtraTrees",
+    "RandomForest"
   ],
   "ranking": {
     "CatBoost": 0.15846,
+    "LightGBM": 0.15951,
+    "ExtraTrees": 0.16086,
+    "RandomForest": 0.16387,
     "RBF_SVM": 0.19814
   },
   "comparison_rows": 44898,

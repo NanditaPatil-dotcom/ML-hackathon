@@ -59,7 +59,7 @@ st.sidebar.header("🔌 Network & API Configuration")
 
 api_url = st.sidebar.text_input(
     "Laptop 1 API Server URL",
-    value="http://localhost:8000"
+    value="http://10.0.15.134:8000"
 ).strip().rstrip("/")
 
 fallback_trips = [

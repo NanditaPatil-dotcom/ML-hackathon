@@ -194,16 +194,14 @@ if "last_result" in st.session_state:
     # --------------------------------------------------
 
     st.markdown("### 🗺️ Trajectory Reconstruction Visualization")
+    st.caption("Ground-truth reference remains secure on Laptop 1 server. Below is the HMM reconstructed route overlaid on raw GPS.")
 
     gps_coords = data.get("gps_coords", [])
-    gt_segments = data.get("ground_truth_segments", [])
     pred_segments = data.get("predicted_segments", [])
 
     if gps_coords:
-
         center_lat = sum(p[0] for p in gps_coords) / len(gps_coords)
         center_lon = sum(p[1] for p in gps_coords) / len(gps_coords)
-
     else:
         center_lat, center_lon = 49.85, 8.59
 
@@ -214,38 +212,15 @@ if "last_result" in st.session_state:
     )
 
     # --------------------------------------------------
-    # GROUND TRUTH ROUTE
-    # --------------------------------------------------
-
-    fg_gt = folium.FeatureGroup(
-        name="Ground Truth Route (Green)",
-        show=True
-    )
-
-    for seg in gt_segments:
-
-        if seg:
-            folium.PolyLine(
-                seg,
-                color="#10b981",
-                weight=5,
-                opacity=0.85
-            ).add_to(fg_gt)
-
-    if gt_segments:
-        fg_gt.add_to(m)
-
-    # --------------------------------------------------
-    # PREDICTED ROUTE
+    # PREDICTED ROUTE (HMM Viterbi Reconstructed Path)
     # --------------------------------------------------
 
     fg_pred = folium.FeatureGroup(
-        name="Predicted Route (Purple)",
+        name="Predicted Route - HMM Viterbi (Purple)",
         show=True
     )
 
     for seg in pred_segments:
-
         if seg:
             folium.PolyLine(
                 seg,
@@ -266,7 +241,6 @@ if "last_result" in st.session_state:
     )
 
     if gps_coords:
-
         folium.PolyLine(
             gps_coords,
             color="#ef4444",
@@ -276,9 +250,7 @@ if "last_result" in st.session_state:
         ).add_to(fg_gps)
 
         sampling_step = max(1, len(gps_coords) // 80)
-
         for point in gps_coords[::sampling_step]:
-
             folium.CircleMarker(
                 location=point,
                 radius=3,

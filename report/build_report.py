@@ -76,7 +76,7 @@ add = parts.append
 
 # EDA
 by_part = inv.groupby("partition").agg(trips=("trip_id", "count"), gps_points=("n_points", "sum"),
-                                        null_rows=("n_nulls", "sum"), duplicate_rows=("n_duplicate_rows", "sum"),
+                                        null_rows=("n_missing_rows", "sum"), duplicate_rows=("n_duplicate_rows", "sum"),
                                         median_dt1s=("frac_dt_eq_1s", "median"), max_gap_s=("max_gap_sec", "max"),
                                         mean_nodes=("n_nodes", "mean"), mean_arcs=("n_arcs", "mean")).reset_index()
 by_part["median_dt1s"] = by_part["median_dt1s"].map(pct)
@@ -90,7 +90,7 @@ partitions. The evaluator_test partition was not opened for analysis, training, 
 {table(by_part)}
 <p class="cap">Table 1: Dataset inventory per partition (results/eda/trip_inventory.csv).</p>
 <pre>{html.escape(eda_txt.strip())}</pre>
-<p><b>Missing values.</b> The inventory shows {int(inv['n_nulls'].sum())} null GPS rows and
+<p><b>Missing values.</b> The inventory shows {int(inv['n_missing_rows'].sum())} null GPS rows and
 {int(inv['n_duplicate_rows'].sum())} duplicate rows across the 90 trips. The main data-quality issue is
 time gaps rather than missing values: most steps are exactly 1 s, but some trips have gaps up to
 {int(inv['max_gap_sec'].max())} s (about {inv['max_gap_sec'].max()/3600:.0f} hours, a recording break inside one trip). Every trip has a reference .route file in these two partitions.</p>

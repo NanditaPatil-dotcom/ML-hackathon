@@ -1,0 +1,27 @@
+# Hyperparameters for each model family, loaded by src/pathsnap/models/*.py.
+# Edit here instead of in code so a teammate can retune without touching Python.
+catboost:
+  iterations: 500
+  depth: 6
+  learning_rate: 0.05
+  loss_function: Logloss
+  random_seed: 42
+  verbose: 0
+
+rbf_svm:
+  kernel: rbf
+  C: 3.0
+  gamma: scale
+  probability: true
+  random_state: 42
+
+comparison:
+  folds: 5
+  select_by: log_loss   # must be well-calibrated: these probabilities feed the HMM
+  models:
+    - CatBoost
+    - RBF_SVM
+  # RBF SVM doesn't scale to the full real candidates table; the comparison
+  # runs on this many GPS points (all candidates kept), the selected model
+  # is then refit on the full dataset for the saved/production model.
+  max_points_for_comparison: 6000

@@ -1,0 +1,12 @@
+{
+  "model": "CatBoost",
+  "data": "student_test_candidates.parquet (10 evaluation trips, held out of all training/tuning)",
+  "accuracy": 0.9444,
+  "precision": 0.7842,
+  "recall": 0.7436,
+  "f1": 0.7633,
+  "roc_auc": 0.9698,
+  "log_loss": 0.1356,
+  "brier": 0.0401,
+  "top1_point_acc": 0.7822
+}

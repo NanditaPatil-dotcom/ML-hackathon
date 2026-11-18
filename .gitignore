@@ -14,3 +14,4 @@ Thumbs.db
 *.jpeg
 *.png.bak
 *.zip
+.pytest_cache/

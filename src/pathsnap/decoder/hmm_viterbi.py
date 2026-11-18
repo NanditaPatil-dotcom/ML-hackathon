@@ -3,18 +3,31 @@ PathSnap HMM & Viterbi Route Reconstruction Engine:
 Implements sequential map-matching:
 - Hidden states: Candidate road segments at each GPS observation
 - Emission probabilities: Derived from trained classifier score + spatial distance
-- Transition probabilities: Derived from road-network topology (direct connection, loop, or network penalty)
+- Transition probabilities: when node coordinates are given (the default in
+  reconstruct_route_for_trip), the Newson & Krumm model from matcher.py:
+  shortest drivable distance between the two candidate positions vs the
+  straight-line GPS distance, plus a turn / U-turn penalty, and impossible if
+  not reachable. Without nodes it falls back to a pure topology heuristic
+  (same arc / directly connected / shares a node / disconnected).
 - Viterbi recurrence: Computes globally most coherent route sequence
 """
 
 import numpy as np
 
+from .graph import RoadGraph
+from .matcher import HMMConfig, match_trip
+
 class HMMRouteDecoder:
-    def __init__(self, arcs, transition_self=0.6, transition_connected=0.35, transition_disconnected=1e-5):
+    def __init__(self, arcs, nodes=None, config=None, transition_self=0.6,
+                 transition_connected=0.35, transition_disconnected=1e-5):
         """
-        arcs: numpy array of shape (N_arcs, 2) where row index is arc_id, cols are [from_node, to_node]
+        arcs:  numpy array (N_arcs, 2); row index is arc_id, cols are [from_node, to_node]
+        nodes: optional numpy array (N_nodes, 2) of [lon, lat]. Enables the
+               distance-aware transition model (recommended).
         """
         self.arcs = arcs
+        self.config = config or HMMConfig()
+        self.graph = RoadGraph.from_arrays(nodes, arcs) if nodes is not None else None
         self.transition_self = transition_self
         self.transition_connected = transition_connected
         self.transition_disconnected = transition_disconnected
@@ -42,7 +55,34 @@ class HMMRouteDecoder:
         # Disconnected penalty
         return np.log(self.transition_disconnected)
         
-    def decode(self, candidates_per_obs):
+    def decode(self, candidates_per_obs, track=None):
+        """Best arc per observation (list aligned with sorted obs keys).
+
+        With nodes (and ideally track (T,3) lon,lat,t) uses the distance-aware
+        HMM; otherwise the topology-only heuristic below.
+        """
+        if self.graph is not None:
+            return self.decode_distance_aware(candidates_per_obs, track)
+        return self.decode_topology(candidates_per_obs)
+
+    def decode_distance_aware(self, candidates_per_obs, track=None):
+        obs_times = sorted(candidates_per_obs.keys())
+        points = []
+        for t in obs_times:
+            p = {"candidates": candidates_per_obs[t]}
+            if track is not None:
+                p["lon"], p["lat"] = float(track[t][0]), float(track[t][1])
+            points.append(p)
+        res = match_trip(points, self.graph, self.config)
+        self.last_result = res
+        out = []
+        for t, rid in zip(obs_times, res.road_ids):
+            if rid is None:  # no usable candidate: best emission
+                rid = max(candidates_per_obs[t], key=lambda c: c.get("score", 0.0))["arc_id"]
+            out.append(rid)
+        return out
+
+    def decode_topology(self, candidates_per_obs):
         """
         Viterbi decoding over candidate sequences.
         candidates_per_obs: dict mapping t (0..T-1) -> list of candidate dicts
@@ -164,8 +204,8 @@ def reconstruct_route_for_trip(trip_dir, trip_id, model, search_radius=75.0, top
     clf_path = [max(cands, key=lambda c: c["score"])["arc_id"] for t, cands in cands_dict.items()]
     
     # 2. Classifier + HMM Viterbi Decoding
-    decoder = HMMRouteDecoder(arcs)
-    hmm_path = decoder.decode(cands_dict)
+    decoder = HMMRouteDecoder(arcs, nodes=nodes)
+    hmm_path = decoder.decode(cands_dict, track=track)
     
     # Metrics
     metrics = {}

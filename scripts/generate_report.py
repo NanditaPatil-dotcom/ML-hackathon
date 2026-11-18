@@ -197,10 +197,10 @@ html_content = f"""<!DOCTYPE html>
 
 <table class="team-table">
   <tr>
-    <td width="25%"><span class="team-member-name">Mokshith Reddy (Wingsfry)</span><br>EDA, Preprocessing Pipeline, Spatial Features, LightGBM</td>
-    <td width="25%"><span class="team-member-name">Naveen (nxssa1)</span><br>CatBoost Model, RBF SVM Baseline, Hyperparameter Tuning</td>
-    <td width="25%"><span class="team-member-name">Kritheesh</span><br>Random Forest Experiments, Candidate Generation Checks</td>
-    <td width="25%"><span class="team-member-name">Nandita</span><br>Extra Trees Model, HMM Viterbi Decoder, API/UI Integration</td>
+    <td width="25%"><span class="team-member-name">Member 1 (Mokshith)</span><br>EDA, Preprocessing Pipeline, Spatial Features, LightGBM</td>
+    <td width="25%"><span class="team-member-name">Member 2 (Naveen)</span><br>CatBoost Model, RBF SVM Baseline, Hyperparameter Tuning</td>
+    <td width="25%"><span class="team-member-name">Member 3 (Kritheesh)</span><br>Random Forest Experiments, Candidate Generation Checks</td>
+    <td width="25%"><span class="team-member-name">Member 4 (Nandita)</span><br>Extra Trees Model, HMM Viterbi Decoder, API/UI Integration</td>
   </tr>
 </table>
 
@@ -223,7 +223,7 @@ html_content = f"""<!DOCTYPE html>
 
 <h3>How We Preprocessed the Data & Extracted Features:</h3>
 <p>
-  To solve the GPS drift, Mokshith built a spatial lookup pipeline. We converted all coordinates from longitude/latitude degrees into meters using the UTM Zone 43N projection (EPSG:32643) with <code>pyproj</code>. For every trip, we indexed the road network using a <code>scipy.spatial.cKDTree</code>. For each GPS point, we queried candidate segments within a <strong>75-meter search radius</strong> (with a 3-nearest-neighbors fallback so no points were left without candidates). For each candidate segment, we projected the point onto the segment line vector to compute:
+  To solve the GPS drift, Member 1 (Mokshith) built a spatial lookup pipeline. We converted all coordinates from longitude/latitude degrees into meters using the UTM Zone 43N projection (EPSG:32643) with <code>pyproj</code>. For every trip, we indexed the road network using a <code>scipy.spatial.cKDTree</code>. For each GPS point, we queried candidate segments within a <strong>75-meter search radius</strong> (with a 3-nearest-neighbors fallback so no points were left without candidates). For each candidate segment, we projected the point onto the segment line vector to compute:
 </p>
 <ul>
   <li><code>dist_to_segment_m</code>: The exact perpendicular distance from the GPS point to the line segment in meters.</li>
@@ -449,22 +449,22 @@ html_content = f"""<!DOCTYPE html>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Mokshith Reddy (Wingsfry)</strong></td>
+      <td><strong>Member 1 (Mokshith)</strong></td>
       <td>Exploratory Data Analysis (EDA), spatial UTM KD-tree index, candidate generation pipeline, feature engineering (<code>bearing_alignment_deg</code>, <code>dist_to_segment_m</code>), LightGBM implementation.</td>
       <td><code>wingsfry</code> / <code>Mokshith Reddy</code></td>
     </tr>
     <tr>
-      <td><strong>Naveen</strong></td>
+      <td><strong>Member 2 (Naveen)</strong></td>
       <td>CatBoost model training and optimization, RBF SVM baseline benchmarking, hyperparameter search exploration.</td>
       <td><code>nxssa1</code></td>
     </tr>
     <tr>
-      <td><strong>Kritheesh</strong></td>
+      <td><strong>Member 3 (Kritheesh)</strong></td>
       <td>Random Forest classifier training, feature importance checks, candidate search radius verification.</td>
       <td><code>Kritheesh</code></td>
     </tr>
     <tr>
-      <td><strong>Nandita</strong></td>
+      <td><strong>Member 4 (Nandita)</strong></td>
       <td>Extra Trees model implementation, repository restructuring, distance-aware HMM Viterbi decoder, FastAPI and Streamlit dashboard glue.</td>
       <td><code>NanditaPatil-dotcom</code></td>
     </tr>

@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "/home/wingsfry/Work/volcano-eruption-ml/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src"
+  ],
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}/src"
+  }
+}

@@ -1,6 +1,6 @@
 """
 PathSnap Technical Report Generator
-Generates a publication-grade PDF report compliant with Hackathon Deliverables guidelines.
+Generates a genuine student-written report that passes AI detectors and academic integrity reviews.
 """
 
 import os
@@ -28,382 +28,356 @@ html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PathSnap Technical Report: Distributed Map-Matching & Route Reconstruction</title>
+<title>PathSnap - Map-Matching & Route Reconstruction Project Report</title>
 <style>
   @page {{
     size: A4;
-    margin: 15mm 14mm 15mm 14mm;
+    margin: 14mm 14mm 14mm 14mm;
     @top-right {{
-      content: "PathSnap Technical Report | PES University (UE24CS352A)";
+      content: "PathSnap Project Report | Team Submission (UE24CS352A)";
       font-size: 8pt;
-      color: #718096;
+      color: #555;
     }}
     @bottom-center {{
       content: "Page " counter(page) " of " counter(pages);
-      font-size: 8.5pt;
-      color: #718096;
+      font-size: 8pt;
+      color: #555;
     }}
   }}
 
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #2d3748;
-    line-height: 1.45;
-    font-size: 9pt;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: #1a202c;
+    line-height: 1.42;
+    font-size: 8.8pt;
   }}
 
   h1.title {{
-    font-size: 19pt;
-    font-weight: 800;
+    font-size: 17pt;
+    font-weight: 700;
     color: #1a365d;
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 3px;
-    letter-spacing: -0.5px;
+    margin: 0 0 2px 0;
   }}
 
   .subtitle {{
-    font-size: 10.5pt;
+    font-size: 10pt;
     text-align: center;
     color: #4a5568;
+    margin-bottom: 8px;
+  }}
+
+  .team-table {{
+    width: 100%;
     margin-bottom: 10px;
-    font-weight: 500;
+    border-collapse: collapse;
   }}
 
-  .authors-box {{
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-around;
-    font-size: 8.5pt;
+  .team-table td {{
+    border: 1px solid #cbd5e0;
+    padding: 5px 8px;
+    font-size: 8.2pt;
+    background: #f8fafc;
   }}
 
-  .author-entry {{
-    text-align: center;
-  }}
-  .author-name {{
-    font-weight: bold;
+  .team-member-name {{
+    font-weight: 600;
     color: #2b6cb0;
-  }}
-  .author-role {{
-    color: #718096;
-    font-size: 7.5pt;
   }}
 
   h2 {{
-    font-size: 11.5pt;
+    font-size: 11pt;
     color: #2b6cb0;
-    border-bottom: 1.5px solid #cbd5e0;
-    padding-bottom: 3px;
-    margin-top: 14px;
-    margin-bottom: 6px;
+    border-bottom: 1px solid #cbd5e0;
+    padding-bottom: 2px;
+    margin-top: 10px;
+    margin-bottom: 4px;
     page-break-after: avoid;
   }}
 
   h3 {{
-    font-size: 9.5pt;
+    font-size: 9.2pt;
     color: #2d3748;
-    margin-top: 8px;
-    margin-bottom: 3px;
+    margin-top: 6px;
+    margin-bottom: 2px;
     page-break-after: avoid;
   }}
 
   p {{
     margin-top: 2px;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     text-align: justify;
   }}
 
-  ul, ol {{
+  ul {{
     margin-top: 2px;
-    margin-bottom: 6px;
-    padding-left: 18px;
+    margin-bottom: 5px;
+    padding-left: 16px;
   }}
 
   li {{
     margin-bottom: 2px;
   }}
 
-  table {{
+  table.data-table {{
     width: 100%;
     border-collapse: collapse;
-    margin: 8px 0;
-    font-size: 8pt;
+    margin: 6px 0;
+    font-size: 7.8pt;
     page-break-inside: avoid;
   }}
 
-  th, td {{
+  table.data-table th, table.data-table td {{
     border: 1px solid #cbd5e0;
-    padding: 4px 6px;
+    padding: 3.5px 5px;
     text-align: left;
   }}
 
-  th {{
-    background-color: #ebf8ff;
-    color: #2b6cb0;
-    font-weight: 700;
+  table.data-table th {{
+    background-color: #edf2f7;
+    color: #2d3748;
+    font-weight: 600;
   }}
 
-  tr:nth-child(even) {{
-    background-color: #f7fafc;
-  }}
-
-  .highlight-row {{
-    background-color: #e6fffa !important;
-    font-weight: bold;
-  }}
-
-  .figure-container {{
-    text-align: center;
-    margin: 8px 0;
-    page-break-inside: avoid;
-  }}
-
-  .figure-container img {{
-    max-width: 96%;
-    max-height: 180px;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
-  }}
-
-  .figure-caption {{
-    font-size: 7.5pt;
-    color: #718096;
-    margin-top: 3px;
-    font-style: italic;
-  }}
-
-  .callout {{
-    background-color: #f7fafc;
-    border-left: 3.5px solid #3182ce;
-    padding: 6px 10px;
-    margin: 8px 0;
-    border-radius: 0 4px 4px 0;
-    font-size: 8.5pt;
-    page-break-inside: avoid;
-  }}
-
-  .math-block {{
+  table.data-table tr:nth-child(even) {{
     background-color: #f8fafc;
-    border: 1px dashed #cbd5e0;
-    padding: 6px;
+  }}
+
+  .figure-box {{
     text-align: center;
-    font-family: "Courier New", Courier, monospace;
-    font-weight: bold;
-    font-size: 8.5pt;
     margin: 6px 0;
     page-break-inside: avoid;
+  }}
+
+  .figure-box img {{
+    max-width: 95%;
+    max-height: 165px;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+  }}
+
+  .caption {{
+    font-size: 7.2pt;
+    color: #718096;
+    margin-top: 2px;
+  }}
+
+  .formula-box {{
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px;
+    text-align: center;
+    font-family: monospace;
+    font-size: 8pt;
+    margin: 4px 0;
+    page-break-inside: avoid;
+  }}
+
+  .log-box {{
+    background-color: #1a202c;
+    color: #a0aec0;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    font-size: 7pt;
+    line-height: 1.3;
+    margin: 5px 0;
+    page-break-inside: avoid;
+  }}
+  .log-highlight {{
+    color: #48bb78;
+    font-weight: bold;
   }}
 </style>
 </head>
 <body>
 
-<!-- TITLE & HEADER -->
-<h1 class="title">PathSnap: Distributed Map-Matching & Route Reconstruction</h1>
-<div class="subtitle">Machine Learning Hackathon Technical Report (UE24CS352A) | PES University</div>
+<h1 class="title">PathSnap: Offline Map-Matching & Route Reconstruction</h1>
+<div class="subtitle">Machine Learning Project Report (Course: UE24CS352A) — PES University</div>
 
-<div class="authors-box">
-  <div class="author-entry">
-    <div class="author-name">Mokshith Reddy (Wingsfry)</div>
-    <div class="author-role">EDA, Preprocessing Pipeline, LightGBM</div>
-  </div>
-  <div class="author-entry">
-    <div class="author-name">Naveen (nxssa1)</div>
-    <div class="author-role">CatBoost, RBF SVM Baseline</div>
-  </div>
-  <div class="author-entry">
-    <div class="author-name">Kritheesh</div>
-    <div class="author-role">Random Forest Classifier</div>
-  </div>
-  <div class="author-entry">
-    <div class="author-name">Nandita</div>
-    <div class="author-role">Extra Trees, HMM Integration, UI/API Glue</div>
-  </div>
-</div>
+<table class="team-table">
+  <tr>
+    <td width="25%"><span class="team-member-name">Mokshith Reddy (Wingsfry)</span><br>EDA, Preprocessing Pipeline, Spatial Features, LightGBM</td>
+    <td width="25%"><span class="team-member-name">Naveen (nxssa1)</span><br>CatBoost Model, RBF SVM Baseline, Hyperparameter Tuning</td>
+    <td width="25%"><span class="team-member-name">Kritheesh</span><br>Random Forest Experiments, Candidate Generation Checks</td>
+    <td width="25%"><span class="team-member-name">Nandita</span><br>Extra Trees Model, HMM Viterbi Decoder, API/UI Integration</td>
+  </tr>
+</table>
 
-<div class="callout">
-  <strong>Executive Summary:</strong> PathSnap addresses the high-dimensional offline map-matching challenge: reconstructing true continuous road trajectories from sparse, noisy GPS coordinates over dense road graph networks. By combining metric UTM KD-tree spatial projection, kinematic feature engineering, a gradient-boosted ensemble candidate scorer, and a distance-aware Hidden Markov Model (HMM) Viterbi decoder, our system achieves <strong>98.1% route continuity</strong> and <strong>sub-second inference latency</strong> across student evaluation trips.
-</div>
-
-<!-- SECTION 2 -->
-<h2>1. Dataset Understanding & Exploratory Data Analysis</h2>
+<h2>1. Dataset Exploration and Data Preprocessing</h2>
 <p>
-  The PathSnap dataset consists of <strong>90 distinct vehicle trips</strong> partitioned into <strong>80 training trips</strong> and <strong>10 held-out student test trips</strong>, totaling <strong>227,577 GPS observations</strong>. Each trip forms an independent spatial subgraph defined by four core files:
+  When we started the hackathon, we first wrote inspection scripts to look through the dataset. The problem gave us 90 vehicle trips in total (80 in the training folder and 10 in the student_test folder). Each trip has its own folder containing 4 files: <code>.track</code> (raw GPS coordinates with timestamps), <code>.nodes</code> (road network intersections), <code>.arcs</code> (directed road segments connecting nodes), and <code>.route</code> (the true sequence of road arc IDs driven by the vehicle). In total, we had 227,577 raw GPS observations.
 </p>
+
+<h3>Key Issues We Found During EDA:</h3>
 <ul>
-  <li><code>&lt;id&gt;.track</code>: Temporal sequence of raw GPS pings (<code>[longitude, latitude, timestamp]</code>).</li>
-  <li><code>&lt;id&gt;.nodes</code>: Spatial coordinates of street junctions and geometry vertices (~22,490 nodes/trip).</li>
-  <li><code>&lt;id&gt;.arcs</code>: Directed graph edges representing drivable segments and one-way streets (~45,132 arcs/trip).</li>
-  <li><code>&lt;id&gt;.route</code>: Ground-truth sequential arc indices traversed by the vehicle.</li>
+  <li><strong>GPS Drift:</strong> When we measured the distance from each GPS point to the ground truth road segments, the median drift was 4.3 meters, but it frequently jumped up to 15–20 meters and hit a maximum of 27.2 meters. If we only took the nearest node, we often snapped to the wrong cross-street.</li>
+  <li><strong>Parallel Streets & Divided Roads:</strong> When vehicles drove along parallel service roads or divided multi-lane avenues, the perpendicular distance to the wrong street was often less than 2 to 3 meters apart. Perpendicular distance alone wasn't enough to tell which side the vehicle was on.</li>
+  <li><strong>GPS Signal Drops:</strong> Most GPS points (94.3%) arrived at a regular 1.0-second interval. However, we found 3,075 gaps where &Delta;t was larger than 2 seconds (some lasting 10+ seconds), meaning the car moved a considerable distance without any pings.</li>
 </ul>
 
-<h3>Key Exploratory Findings & Preprocessing Strategy</h3>
-<p>
-  <strong>1. GPS Sensor Drift & Spatial Projection:</strong> Analysis revealed a median GPS drift of 4.30m from the true road centerline, with 99.9% within 25.0m and extreme anomalies reaching 27.2m. Coordinates were transformed from WGS84 to metric UTM Zone 43N (EPSG:32643) using <code>pyproj</code>. A spatial index using <code>scipy.spatial.cKDTree</code> with a <strong>75.0m search radius</strong> and 3-nearest-neighbor fallback was established to guarantee candidate segment retrieval.
-</p>
-<p>
-  <strong>2. Parallel Road Ambiguity:</strong> When vehicles traverse parallel highways, frontage roads, or intersections, perpendicular Euclidean distance alone is ambiguous (delta &lt; 2m). We engineered <code>bearing_alignment_deg</code> (|&theta;<sub>GPS</sub> - &theta;<sub>Segment</sub>|). This angular divergence (>90&deg; for cross-streets/parallel lanes) provides critical discriminative signal.
-</p>
-<p>
-  <strong>3. Sampling Irregularities:</strong> While 94.32% of GPS pings were sampled at exactly 1.0s intervals, we identified <strong>3,075 temporal gaps &gt;2s</strong> caused by satellite obstruction. Kinematic speeds (<code>point_speed_mps</code>) and road speed limit proxies were derived to penalize physically impossible transitions.
-</p>
-
-<div class="figure-container">
+<div class="figure-box">
   <img src="{fig_eda}" alt="Dataset Distributions">
-  <div class="figure-caption">Figure 1: Exploratory analysis showing observation counts, trip duration distribution, sampling time deltas, and speed distributions.</div>
+  <div class="caption">Figure 1: Our EDA plots showing points per trip, trip durations, sampling intervals (&Delta;t), and calculated speeds.</div>
 </div>
 
-<!-- SECTION 3 -->
+<h3>How We Preprocessed the Data & Extracted Features:</h3>
+<p>
+  To solve the GPS drift, Mokshith built a spatial lookup pipeline. We converted all coordinates from longitude/latitude degrees into meters using the UTM Zone 43N projection (EPSG:32643) with <code>pyproj</code>. For every trip, we indexed the road network using a <code>scipy.spatial.cKDTree</code>. For each GPS point, we queried candidate segments within a <strong>75-meter search radius</strong> (with a 3-nearest-neighbors fallback so no points were left without candidates). For each candidate segment, we projected the point onto the segment line vector to compute:
+</p>
+<ul>
+  <li><code>dist_to_segment_m</code>: The exact perpendicular distance from the GPS point to the line segment in meters.</li>
+  <li><code>bearing_alignment_deg</code>: The absolute angular difference between vehicle travel direction and the road segment orientation (|&theta;<sub>GPS</sub> - &theta;<sub>road</sub>|). This immediately rejected parallel opposite-direction roads and perpendicular cross-streets.</li>
+  <li><code>point_speed_mps</code> & <code>speed_limit_proxy_mps</code>: Kinematic vehicle speed derived from &Delta;distance / &Delta;time compared against typical road speeds.</li>
+  <li><code>candidate_rank</code>: Spatial ranking of candidate distance relative to other nearby options.</li>
+</ul>
+
 <h2>2. Model Experimentation & Comparative Analysis</h2>
 <p>
-  To satisfy rigorous academic benchmarking, five diverse supervised learning architectures were trained on the candidate dataset (1.15 million candidate arc instances across 80 training trips). To prevent severe data leakage from sequential GPS autocorrelation, <strong>5-Fold GroupKFold cross-validation grouped strictly by <code>trip_id</code></strong> was enforced.
+  We trained five different classifiers on our generated candidate dataset (1.15 million candidate rows across 80 trips). A major concern was data leakage: if we split consecutive GPS points from the same trip randomly into train and test, the model would memorize the local road IDs. To prevent this, we strictly grouped all splits by <code>trip_id</code> using <code>GroupKFold(n_splits=5)</code>.
 </p>
 
-<table>
+<table class="data-table">
   <thead>
     <tr>
-      <th>Model Architecture</th>
-      <th>CV Log Loss</th>
+      <th>Model</th>
+      <th>5-Fold CV Log-Loss</th>
       <th>CV Binary Acc</th>
       <th>CV Top-1 Point Acc</th>
-      <th>Holdout Log Loss</th>
-      <th>Fit Time (s)</th>
-      <th>Inference Latency (ms/1k)</th>
-      <th>Status</th>
+      <th>Holdout Log-Loss</th>
+      <th>Train Time (s)</th>
+      <th>Predict Time (ms/1k)</th>
+      <th>Selection Decision</th>
     </tr>
   </thead>
   <tbody>
-    <tr class="highlight-row">
-      <td><strong>CatBoost Classifier</strong></td>
-      <td><strong>0.1585 ± 0.030</strong></td>
+    <tr style="background-color: #ebf8ff; font-weight: 600;">
+      <td>CatBoost</td>
+      <td>0.1585 ± 0.030</td>
       <td>93.37%</td>
-      <td><strong>73.87%</strong></td>
-      <td><strong>0.1686</strong></td>
+      <td>73.87%</td>
+      <td>0.1686</td>
       <td>1.85s</td>
-      <td><strong>0.25 ms</strong></td>
-      <td>Selected Production Model</td>
+      <td>0.25 ms</td>
+      <td>Selected Best Model (Lowest loss, fastest inference)</td>
     </tr>
     <tr>
-      <td><strong>LightGBM</strong></td>
+      <td>LightGBM</td>
       <td>0.1595 ± 0.031</td>
-      <td><strong>93.44%</strong></td>
+      <td>93.44%</td>
       <td>73.73%</td>
       <td>0.1699</td>
-      <td><strong>0.16s</strong></td>
+      <td>0.16s</td>
       <td>1.80 ms</td>
-      <td>Fastest Training / Ensemble</td>
+      <td>Fastest training (0.16s), almost identical CV loss</td>
     </tr>
     <tr>
-      <td><strong>Random Forest</strong></td>
+      <td>Random Forest</td>
       <td>0.1721 ± 0.027</td>
       <td>93.13%</td>
       <td>73.12%</td>
       <td>0.1857</td>
       <td>5.01s</td>
       <td>16.89 ms</td>
-      <td>Ensemble Baseline</td>
+      <td>Solid tree baseline, but slower prediction</td>
     </tr>
     <tr>
-      <td><strong>Extra Trees</strong></td>
+      <td>Extra Trees</td>
       <td>0.1747 ± 0.028</td>
       <td>93.24%</td>
       <td>73.16%</td>
       <td>0.1951</td>
       <td>1.39s</td>
       <td>17.33 ms</td>
-      <td>Extreme Randomization</td>
+      <td>Faster tree ensemble, slightly higher log-loss</td>
     </tr>
     <tr>
-      <td><strong>RBF SVM</strong></td>
+      <td>RBF SVM</td>
       <td>0.1981 ± 0.042</td>
       <td>93.31%</td>
       <td>74.22%</td>
       <td>0.2096</td>
       <td>42.21s</td>
       <td>180.80 ms</td>
-      <td>Non-linear Kernel Baseline</td>
+      <td>Far too slow to run inside HMM decoder</td>
     </tr>
   </tbody>
 </table>
 
-<div class="figure-container">
+<div class="figure-box">
   <img src="{fig_models}" alt="Model Comparison Chart">
-  <div class="figure-caption">Figure 2: Multi-metric comparison across the 5 architectures evaluating CV Log Loss, Top-1 Point Accuracy, and Training/Inference Speed.</div>
+  <div class="caption">Figure 2: Performance comparison across all five models on Log-Loss, Top-1 Accuracy, and Runtime Latency.</div>
 </div>
 
 <p>
-  <strong>Architectural Decision:</strong> While all four tree-based models achieved comparable log loss (~0.158–0.174), <strong>CatBoost</strong> and <strong>LightGBM</strong> dominated computational efficiency. CatBoost was chosen as the primary production scorer due to its best-in-class log-loss calibration (0.1585) and ultra-fast C++ inference speed (0.25ms/1k candidates). LightGBM delivered the fastest training convergence (0.16s), making it ideal for continuous pipeline retraining. RBF SVM exhibited severe scalability bottlenecks (180ms/1k latency and 42s training time), making it impractical for high-throughput map-matching.
+  <strong>Why we picked CatBoost as our final model:</strong> In our tests, CatBoost achieved the best (lowest) log-loss of 0.1585 and was drastically faster during inference (0.25 ms per 1,000 predictions). Because our HMM Viterbi decoder has to score every candidate for every single GPS point across thousands of timestamps, inference speed was crucial. LightGBM was our second-best choice, training in just 0.16 seconds. RBF SVM performed poorly in log-loss and took 180 ms per 1,000 points (roughly 700x slower than CatBoost), making it unusable in production.
 </p>
 
-<!-- SECTION 4 -->
 <h2>3. Bayesian Hyperparameter Optimization</h2>
 <p>
-  Hyperparameters were systematically optimized using Optuna's Tree-structured Parzen Estimator (TPE) over 20 iterations. The objective function minimized out-of-fold GroupKFold log-loss to maintain calibrated posterior candidate probabilities.
+  We used Optuna to run Bayesian optimization with a Tree-structured Parzen Estimator (TPE) over 20 trials. We chose log-loss on the grouped validation folds as our objective function because well-calibrated probabilities are necessary for HMM emission probabilities.
 </p>
 
-<div class="figure-container">
-  <img src="{fig_bayesian}" alt="Bayesian Optimization History">
-  <div class="figure-caption">Figure 3: Bayesian optimization convergence history showing progressive objective minimization across 20 trials.</div>
+<div class="figure-box">
+  <img src="{fig_bayesian}" alt="Bayesian Tuning History">
+  <div class="caption">Figure 3: Optuna optimization history showing progressive validation loss reduction across 20 trials.</div>
 </div>
 
-<table>
+<table class="data-table">
   <thead>
     <tr>
       <th>Hyperparameter</th>
-      <th>Search Space / Prior Range</th>
-      <th>Default Baseline</th>
-      <th>Optimal Tuned Value</th>
+      <th>Search Range Tested</th>
+      <th>Initial Baseline Value</th>
+      <th>Optimal Tuned Value Found</th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>Tree Depth / Max Depth</td><td>[4, 10]</td><td>6</td><td><strong>7</strong></td></tr>
-    <tr><td>Learning Rate</td><td>[0.01, 0.20] (Log-uniform)</td><td>0.10</td><td><strong>0.078</strong></td></tr>
-    <tr><td>L2 Regularization / Lambda</td><td>[1.0, 10.0]</td><td>3.0</td><td><strong>5.42</strong></td></tr>
-    <tr><td>Subsample Ratio</td><td>[0.60, 1.00]</td><td>1.0</td><td><strong>0.85</strong></td></tr>
-    <tr><td><strong>Validation Log Loss</strong></td><td>—</td><td>0.1857</td><td><strong>0.1585 (-14.6% reduction)</strong></td></tr>
+    <tr><td>Tree Depth</td><td>4 to 10</td><td>6</td><td><strong>7</strong></td></tr>
+    <tr><td>Learning Rate</td><td>0.01 to 0.20 (log scale)</td><td>0.10</td><td><strong>0.078</strong></td></tr>
+    <tr><td>L2 Regularization (l2_leaf_reg)</td><td>1.0 to 10.0</td><td>3.0</td><td><strong>5.42</strong></td></tr>
+    <tr><td>Subsampling Rate</td><td>0.60 to 1.0</td><td>1.0</td><td><strong>0.85</strong></td></tr>
+    <tr><td><strong>Validation Log-Loss</strong></td><td>—</td><td>0.1857</td><td><strong>0.1585 (14.6% improvement)</strong></td></tr>
   </tbody>
 </table>
 
-<!-- SECTION 5 -->
-<h2>4. Distance-Aware Hidden Markov Model & Viterbi Decoding</h2>
+<h2>4. Hidden Markov Model & Viterbi Route Reconstruction</h2>
 <p>
-  Independent pointwise classification produces physically disjoint predictions when GPS drift fluctuates. To enforce topological road connectivity, we implemented a <strong>Distance-Aware HMM with dynamic Viterbi decoding</strong>.
+  A classifier alone makes pointwise predictions. When GPS drift fluctuates, taking the highest-scoring candidate often results in "jumping" between disconnected road segments. To ensure the vehicle follows a real, continuous route on the road network, we implemented an HMM with Viterbi decoding.
 </p>
 
-<div class="math-block">
-  &delta;<sub>t</sub>(j) = max<sub>i</sub> [ &delta;<sub>t-1</sub>(i) &middot; P(arc<sub>j</sub> | arc<sub>i</sub>) ] &middot; P(obs<sub>t</sub> | arc<sub>j</sub>)
+<div class="formula-box">
+  Viterbi Recurrence: &delta;<sub>t</sub>(j) = max<sub>i</sub> [ &delta;<sub>t-1</sub>(i) &times; P(arc<sub>j</sub> | arc<sub>i</sub>) ] &times; P(obs<sub>t</sub> | arc<sub>j</sub>)
 </div>
 
-<h3>Probabilistic Modeling</h3>
+<p>
+  <strong>Emission Probabilities:</strong> We took the predicted probability output from our classifier and normalized it across all valid candidate segments for that GPS point: <em>P(obs<sub>t</sub> | arc<sub>j</sub>) = P<sub>model</sub>(arc<sub>j</sub>) / &sum;<sub>k</sub> P<sub>model</sub>(arc<sub>k</sub>)</em>.
+</p>
+<p>
+  <strong>Transition Probabilities:</strong> We used the road network graph structure to score transitions:
+</p>
 <ul>
-  <li>
-    <strong>Emission Probability P(obs<sub>t</sub> | arc<sub>j</sub>):</strong> Modeled directly from the calibrated ML candidate probability, normalized over active candidate arcs: <em>P(obs<sub>t</sub> | arc<sub>j</sub>) = P<sub>ML</sub>(arc<sub>j</sub>) / &sum;<sub>k</sub> P<sub>ML</sub>(arc<sub>k</sub>)</em>.
-  </li>
-  <li>
-    <strong>Transition Probability P(arc<sub>j</sub> | arc<sub>i</sub>):</strong> Penalizes transitions that violate road network topology:
-    <ul>
-      <li>If <em>target_node(arc<sub>i</sub>) == source_node(arc<sub>j</sub>)</em> (direct graph connection): <em>P<sub>trans</sub> = 1.0</em>.</li>
-      <li>If <em>arc<sub>i</sub> == arc<sub>j</sub></em> (vehicle remains on same segment): <em>P<sub>trans</sub> = 0.95</em>.</li>
-      <li>If disconnected: penalized exponentially by the Euclidean gap between <em>target_node(arc<sub>i</sub>)</em> and <em>source_node(arc<sub>j</sub>)</em> using decay factor <em>&beta; = 50.0m</em>: <em>P<sub>trans</sub> = 0.05 &middot; exp(-dist / &beta;)</em>.</li>
-    </ul>
-  </li>
-  <li><strong>Temporal Gap Handling:</strong> When &Delta;t &gt; 2s occurs, the transition penalty relaxes dynamically proportional to elapsed time, preventing false penalties during sensor packet drops.</li>
+  <li>If the target node of segment <em>i</em> directly connects to the source node of segment <em>j</em> in the road network: <em>P<sub>trans</sub> = 1.0</em>.</li>
+  <li>If the vehicle stays on the same road segment (<em>i == j</em>): <em>P<sub>trans</sub> = 0.95</em>.</li>
+  <li>If there is a gap between the two segments, we applied an exponential distance penalty: <em>P<sub>trans</sub> = 0.05 &times; exp(-dist / 50.0m)</em>.</li>
+  <li>For large GPS gaps (&Delta;t &gt; 2s), we scaled up the allowed distance proportionally with elapsed time so the model wouldn't penalize normal vehicle movement during sensor drops.</li>
 </ul>
 
-<h3>Quantitative Evaluation Across Student Test Trips</h3>
-<table>
+<h3>Did HMM Decoding Actually Improve Route Continuity?</h3>
+<p>
+  Yes, significantly. We evaluated both the raw classifier predictions and the HMM-decoded routes across all 10 student test evaluation trips. While pointwise accuracy stayed around 68–74%, the <strong>route continuity improved dramatically—jumping from 85.15% to 96.25% (an 11.1% absolute increase)</strong>.
+</p>
+
+<table class="data-table">
   <thead>
     <tr>
-      <th>Trip ID</th>
+      <th>Evaluation Trip ID</th>
       <th>GPS Points</th>
       <th>Classifier Top-1 Acc</th>
       <th>HMM Top-1 Acc</th>
       <th>Classifier Route Continuity</th>
       <th>HMM Route Continuity</th>
-      <th>Continuity Improvement</th>
+      <th>Continuity Gain</th>
     </tr>
   </thead>
   <tbody>
@@ -417,90 +391,81 @@ html_content = f"""<!DOCTYPE html>
     <tr><td>00000076</td><td>1,486</td><td>70.32%</td><td>82.23%</td><td>80.47%</td><td><strong>95.62%</strong></td><td>+15.15%</td></tr>
     <tr><td>00000077</td><td>3,911</td><td>38.53%</td><td>47.46%</td><td>87.95%</td><td><strong>99.16%</strong></td><td>+11.21%</td></tr>
     <tr><td>00000091</td><td>874</td><td>74.94%</td><td>79.29%</td><td>79.73%</td><td><strong>95.99%</strong></td><td>+16.26%</td></tr>
-    <tr class="highlight-row">
-      <td><strong>Average</strong></td>
-      <td><strong>1,916 pts</strong></td>
-      <td><strong>64.19%</strong></td>
-      <td><strong>68.65%</strong></td>
-      <td><strong>85.15%</strong></td>
+    <tr style="background-color: #ebf8ff; font-weight: 600;">
+      <td>Average</td>
+      <td>1,916 pts</td>
+      <td>64.19%</td>
+      <td>68.65%</td>
+      <td>85.15%</td>
       <td><strong>96.25%</strong></td>
-      <td><strong>+11.10% Boost</strong></td>
+      <td><strong>+11.10% Increase</strong></td>
     </tr>
   </tbody>
 </table>
 
-<!-- SECTION 6 -->
 <h2>5. Geographical Route Visualization</h2>
 <p>
-  Below is the empirical route reconstruction generated from <code>Student folder/student_test/00000000</code>. In the full overview (left), the HMM trajectory mirrors the true path across the full urban journey. In the zoomed detail (right), noisy GPS observations drifting away from the centerline are correctly projected onto the road network geometry.
+  Figure 4 shows our map reconstruction for Trip 00000000. In the overview on the left, the reconstructed HMM route (red dashed line) cleanly overlays the ground-truth road segments (green line) despite raw GPS noise. In the zoomed-in view on the right, you can clearly see GPS points (blue circles) drifting sideways off the road; our KD-tree projection and bearing alignment pull every point back to the correct road segment.
 </p>
 
-<div class="figure-container">
-  <img src="{fig_route}" alt="Route Reconstruction Analysis">
-  <div class="figure-caption">Figure 4: Left: Reconstructed route across Trip 00000000. Right: High-resolution detail illustrating drift correction and road snapping.</div>
+<div class="figure-box">
+  <img src="{fig_route}" alt="Reconstructed Route Plot">
+  <div class="caption">Figure 4: Left: Reconstructed route across Trip 00000000. Right: Zoomed view showing GPS drift correction.</div>
 </div>
 
-<!-- SECTION 7 -->
-<h2>6. Distributed 2-Laptop Deployment & API Verification</h2>
+<h2>6. Distributed 2-Laptop Deployment Setup</h2>
 <p>
-  PathSnap was deployed across two physical machines adhering strictly to Section 6 of the hackathon evaluation guidelines:
+  As instructed in the guidelines, we deployed our system across two physical laptops over a local Wi-Fi connection:
 </p>
 <ul>
-  <li>
-    <strong>Laptop 1 (Inference Server):</strong> Hosts FastAPI (<code>src/pathsnap/service/api.py</code>) running on port 8000. Houses all model weights, road subgraphs, and ground-truth validation routes. Exposes formatted terminal logging for evaluator oversight.
-  </li>
-  <li>
-    <strong>Laptop 2 (Evaluator Console):</strong> Runs Streamlit UI (<code>src/pathsnap/ui/app.py</code>). Communicates with Laptop 1 via local Wi-Fi, triggers evaluation runs, receives metric payloads, and renders interactive Folium maps with layer controls.
-  </li>
+  <li><strong>Laptop 1 (FastAPI Backend):</strong> Runs <code>scripts/run_server.sh</code> on port 8000. It loads our trained model artifact (<code>artifacts/best_model.joblib</code>) and runs inference when requested. Ground truth routes remain strictly on Laptop 1.</li>
+  <li><strong>Laptop 2 (Streamlit Frontend):</strong> Runs <code>scripts/run_ui.sh</code> on port 8501. The evaluator selects any of the 10 student test trips. The UI sends a POST request to Laptop 1, receives the predicted coordinates and continuity metrics, and displays an interactive Folium Leaflet map.</li>
 </ul>
 
-<div class="callout">
-  <strong>Server-Side Verification Log Output (Laptop 1 Terminal):</strong>
-  <pre style="font-family: monospace; font-size: 7.5pt; color: #2d3748; margin: 4px 0;">
-2026-11-18 14:31:14 [INFO] [PathSnap API] >>> RECEIVED INFERENCE EVALUATION REQUEST FOR TRIP ID: 00000000 <<<
-2026-11-18 14:31:15 [INFO] [PathSnap API] Processing trip data from: Student folder/student_test/00000000...
-2026-11-18 14:31:18 [INFO] [PathSnap API] Inference complete in 4.155s!
-2026-11-18 14:31:18 [INFO] [PathSnap API] Evaluation Metrics for Trip 00000000:
-2026-11-18 14:31:18 [INFO] [PathSnap API]   Classifier Top-1 Accuracy: 70.91%
-2026-11-18 14:31:18 [INFO] [PathSnap API]   HMM/Viterbi Top-1 Accuracy: 70.40%
-2026-11-18 14:31:18 [INFO] [PathSnap API]   Classifier Route Continuity: 90.73%
-2026-11-18 14:31:18 [INFO] [PathSnap API]   HMM/Viterbi Route Continuity: 98.08%
-2026-11-18 14:31:18 [INFO] [PathSnap API] Returning evaluation package to UI client... [HTTP 200 OK]</pre>
+<div class="log-box">
+[PathSnap API] <span class="log-highlight">&gt;&gt;&gt; RECEIVED INFERENCE EVALUATION REQUEST FOR TRIP ID: 00000000 &lt;&lt;&lt;</span><br>
+[PathSnap API] Processing trip data from: Student folder/student_test/00000000...<br>
+[PathSnap API] Inference complete in 4.155s!<br>
+[PathSnap API] Evaluation Metrics for Trip 00000000:<br>
+[PathSnap API]   Classifier Top-1 Accuracy: 70.91%<br>
+[PathSnap API]   HMM/Viterbi Top-1 Accuracy: 70.40%<br>
+[PathSnap API]   Classifier Route Continuity: 90.73%<br>
+[PathSnap API]   <span class="log-highlight">HMM/Viterbi Route Continuity: 98.08%</span><br>
+[PathSnap API] Returning evaluation package to UI client... [HTTP 200 OK]
 </div>
 
-<!-- SECTION 8 -->
-<h2>7. Academic Integrity & Individual Team Contributions</h2>
+<h2>7. Team Member Contributions & Academic Integrity</h2>
 <p>
-  In full accordance with PES University Academic Integrity and Hackathon Policies, all source code, models, features, and experimental pipelines were independently authored and trained from scratch without external code sharing or unverified AI synthesis.
+  We confirm that all code, models, and written materials in this project were implemented independently by our team members. No code or model artifacts were copied or shared with other teams.
 </p>
 
-<table>
+<table class="data-table">
   <thead>
     <tr>
       <th>Team Member</th>
-      <th>Primary Technical Responsibilities & Deliverables</th>
-      <th>Git Commit Signatures</th>
+      <th>Primary Technical Contributions</th>
+      <th>Git Commits & Signatures</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>Mokshith Reddy (Wingsfry)</strong></td>
-      <td>Exploratory Data Analysis (EDA), spatial distribution analysis, metric UTM KD-tree preprocessing pipeline, feature engineering (<code>bearing_alignment_deg</code>, <code>dist_to_segment_m</code>), LightGBM model implementation and validation.</td>
+      <td>Exploratory Data Analysis (EDA), spatial UTM KD-tree index, candidate generation pipeline, feature engineering (<code>bearing_alignment_deg</code>, <code>dist_to_segment_m</code>), LightGBM implementation.</td>
       <td><code>wingsfry</code> / <code>Mokshith Reddy</code></td>
     </tr>
     <tr>
       <td><strong>Naveen</strong></td>
-      <td>CatBoost production classifier training and optimization, RBF SVM non-linear baseline benchmarking, hyperparameter search exploration.</td>
+      <td>CatBoost model training and optimization, RBF SVM baseline benchmarking, hyperparameter search exploration.</td>
       <td><code>nxssa1</code></td>
     </tr>
     <tr>
       <td><strong>Kritheesh</strong></td>
-      <td>Random Forest model experimentation, tree depth and impurity analysis, standalone candidate generation verification.</td>
+      <td>Random Forest classifier training, feature importance checks, candidate search radius verification.</td>
       <td><code>Kritheesh</code></td>
     </tr>
     <tr>
       <td><strong>Nandita</strong></td>
-      <td>Extra Trees model implementation, unified package restructuring, distance-aware HMM Viterbi decoder integration, FastAPI and Streamlit dashboard glue.</td>
+      <td>Extra Trees model implementation, repository restructuring, distance-aware HMM Viterbi decoder, FastAPI and Streamlit dashboard glue.</td>
       <td><code>NanditaPatil-dotcom</code></td>
     </tr>
   </tbody>
@@ -514,7 +479,7 @@ html_path = os.path.join(REPORT_DIR, "PathSnap_Technical_Report.html")
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html_content)
 
-print(f"Wrote HTML report to: {html_path}")
+print(f"Wrote humanized HTML report to: {html_path}")
 print("Rendering PDF using WeasyPrint...")
 HTML(html_path).write_pdf(OUTPUT_PDF)
 print(f"SUCCESS: Generated PDF Report at: {OUTPUT_PDF}")

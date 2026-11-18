@@ -28,8 +28,8 @@ DATA_DIR = os.environ.get("PATHSNAP_DATA_DIR", os.path.join(REPO_ROOT, "Student 
 MODEL_PATH = os.environ.get(
     "PATHSNAP_MODEL", os.path.join(REPO_ROOT, "artifacts", "models", "catboost_best.joblib")
 )
-# Partitions searched for a trip id (/trips shows evaluator_test if present, else student_test).
-PARTITIONS = ["student_test", "evaluator_test", "train"]
+# Partitions searched for evaluation trips. Restricted to evaluation sets only.
+PARTITIONS = ["evaluator_test", "student_test"]
 
 app = FastAPI(title="PathSnap Distributed Map-Matching API", version="1.0.0")
 

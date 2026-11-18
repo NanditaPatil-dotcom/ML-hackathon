@@ -12,17 +12,14 @@ data/demo/
 .ipynb_checkpoints/
 catboost_info/
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
+# Raw/interim data: regenerate locally, keep only the folder + README in git
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/interim/*
+!data/interim/.gitkeep
+!data/interim/README.md
 
-# Raw dataset (large files, over 90MB)
-Student folder/
-
-# Intermediate large dumps
-*.parquet
-*.feather
-outputs/processed_*.csv
-
-# OS files
-.DS_Store
-Thumbs.db
+# Large training logs; comparison reports in results/ are tracked
+artifacts/logs/*
+!artifacts/logs/.gitkeep
